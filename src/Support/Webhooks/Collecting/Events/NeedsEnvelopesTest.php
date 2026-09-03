@@ -29,7 +29,7 @@ final class NeedsEnvelopesTest extends TestCase
     public function it_collects_envelopes(): void
     {
         $relay = Relay::factory()->webhook()->createQuietly();
-        $subscription = Subscription::factory()->for(Subscriber::factory(), 'subscriber')->create();
+        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
 
         $event = new NeedsEnvelopes($relay);
         $event->add(Envelope::make(recipient: $subscription));
