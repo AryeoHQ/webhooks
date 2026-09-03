@@ -1,0 +1,94 @@
+{
+    "name": "aryeo/webhooks",
+    "type": "library",
+    "repositories": {
+        "tooling-laravel": {
+            "type": "vcs",
+            "url": "https://github.com/AryeoHQ/tooling-laravel"
+        },
+        "actions": {
+            "type": "vcs",
+            "url": "https://github.com/AryeoHQ/actions"
+        },
+        "eloquent-state-machine": {
+            "type": "vcs",
+            "url": "https://github.com/AryeoHQ/eloquent-state-machine"
+        },
+        "event-log": {
+            "type": "path",
+            "url": "../event-log"
+        }
+    },
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^12.37",
+        "aryeo/event-log": "*",
+        "aryeo/tooling-laravel": "0.0.39",
+        "phpstan/phpstan": "^2.1",
+        "nikic/php-parser": "^5.0",
+        "cloudevents/sdk-php": "^1.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.6",
+        "brianium/paratest": "^7.14",
+        "phpunit/phpunit": "^12.4.1",
+        "pestphp/pest": "^4.1",
+        "orchestra/testbench-core": "^10.7",
+        "nunomaduro/collision": "<8.9.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Support\\": "src/Support"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Justin Seliga",
+            "email": "justinsel@zillowgroup.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "aryeo/tooling-laravel": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Support\\Webhooks\\Providers\\Provider"
+            ]
+        },
+        "tooling": {
+            "phpstan": {
+                "config": {
+                    "paths": [
+                        "src"
+                    ]
+                }
+            },
+            "rector": {
+                "config": {
+                    "paths": [
+                        "src"
+                    ]
+                }
+            },
+            "pint": {
+                "config": {
+                    "paths": [
+                        "src",
+                        "tests"
+                    ]
+                }
+            }
+        }
+    }
+}
