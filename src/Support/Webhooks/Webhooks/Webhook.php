@@ -41,9 +41,9 @@ class Webhook
     /** @var array<string, string> */
     public private(set) array $headers {
         get => $this->headers ??= [
+            ...$this->subscription->headers ?? [],
             'Idempotency-Key' => $this->id,
             'X-Webhook-Signature' => hash_hmac('sha256', $this->payload, $this->subscription->secret),
-            ...$this->subscription->headers ?? [],
         ];
     }
 

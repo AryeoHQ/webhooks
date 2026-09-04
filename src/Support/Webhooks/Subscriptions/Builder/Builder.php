@@ -12,7 +12,7 @@ use Support\Webhooks\Subscriptions\Status\Status;
  */
 class Builder extends EloquentBuilder
 {
-    public function receiving(string $alias): self
+    public function for(string $alias): self
     {
         return $this->where('event', $alias);
     }

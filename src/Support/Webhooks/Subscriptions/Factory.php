@@ -20,7 +20,7 @@ final class Factory extends EloquentFactory
     public function definition(): array
     {
         return [
-            'event' => fake()->slug(2, false) . '.' . fake()->randomElement(['created', 'updated', 'deleted']),
+            'event' => fake()->slug(2, false).'.'.fake()->randomElement(['created', 'updated', 'deleted']),
             'url' => fake()->url(),
         ];
     }

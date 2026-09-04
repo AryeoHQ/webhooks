@@ -6,10 +6,10 @@ namespace Support\Webhooks\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Support\Webhooks\Collecting\Events\NeedsEnvelopes;
-use Support\Webhooks\Collecting\Listeners\Gather;
+use Support\Events\Log\Deliveries\Status\Events\Failed;
 use Support\Webhooks\Sending\Events\NeedsSent;
 use Support\Webhooks\Sending\Listeners\Deliver;
+use Support\Webhooks\Subscriptions\Listeners\AutoDisable;
 
 class Provider extends ServiceProvider
 {
@@ -31,8 +31,8 @@ class Provider extends ServiceProvider
 
     private function bootListeners(): void
     {
-        Event::listen(NeedsEnvelopes::class, Gather::class);
         Event::listen(NeedsSent::class, Deliver::class);
+        Event::listen(Failed::class, AutoDisable::class);
     }
 
     private function bootMigrations(): void

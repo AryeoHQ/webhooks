@@ -21,7 +21,7 @@ final class BuilderTest extends TestCase
         Subscription::factory()->for($subscriber)->create(['event' => 'order.placed']);
         Subscription::factory()->for($subscriber)->create(['event' => 'order.cancelled']);
 
-        $results = Subscription::receiving('order.placed')->get();
+        $results = Subscription::for('order.placed')->get();
 
         $this->assertCount(1, $results);
         $this->assertSame('order.placed', $results->first()->event);

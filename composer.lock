@@ -232,7 +232,7 @@
             "dist": {
                 "type": "path",
                 "url": "../event-log",
-                "reference": "f0ae922f0da5575cf3ddda5d61593be9bee02e0e"
+                "reference": "08dde014d2eb6108496b7f6916940868a53ee633"
             },
             "require": {
                 "aryeo/actions": "0.0.21",
