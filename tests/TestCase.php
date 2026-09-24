@@ -23,6 +23,8 @@ abstract class TestCase extends Testbench\TestCase
     {
         return [
             Provider::class,
+            \Support\Webhooks\Subscriptions\Providers\Provider::class,
+            \Support\Webhooks\Topics\Providers\Provider::class,
             \Tests\Fixtures\Support\Webhooks\Providers\Provider::class,
         ];
     }

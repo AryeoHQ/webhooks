@@ -15,13 +15,17 @@
         <exclude>
             <directory suffix="Test.php">./src</directory>
             <directory suffix="TestCases.php">./src</directory>
-            <file>./src/Support/Webhooks/Subscriptions/Factory.php</file>
+            <file>./src/Support/Webhooks/Subscriptions/Factory/Factory.php</file>
+            <file>./src/Support/Webhooks/Topics/Factory/Factory.php</file>
             <directory>./src/Support/Webhooks/Subscriptions/Migrations</directory>
+            <directory>./src/Support/Webhooks/Topics/Migrations</directory>
         </exclude>
     </source>
     <php>
         <env name="APP_KEY" value="base64:sqZsknu3DcUA1iUynaz3a6Rf4SslS3YoZ8Bal/JP8GQ=" />
         <env name="BCRYPT_ROUNDS" value="4" />
+        <!-- SQLite ignores foreign keys unless the pragma is on, which would hide cascade deletes. -->
+        <env name="DB_FOREIGN_KEYS" value="true" />
         <env name="CACHE_STORE" value="array" />
         <env name="QUEUE_CONNECTION" value="sync" />
         <env name="BROADCAST_CONNECTION" value="null" />

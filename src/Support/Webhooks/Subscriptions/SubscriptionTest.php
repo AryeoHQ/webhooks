@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Support\Webhooks\Subscriptions;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\Test;
+use Support\Events\Log\Transportables\Transportable;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
 use Tests\Fixtures\Support\Webhooks\Subscriptions\Subscription as ExtendedSubscription;
 use Tests\TestCase;
 
 #[CoversClass(Subscription::class)]
+#[CoversTrait(GeneratesSecret::class)]
 final class SubscriptionTest extends TestCase
 {
     #[Test]
@@ -69,5 +72,36 @@ final class SubscriptionTest extends TestCase
         } finally {
             Subscription::use(Subscription::class);
         }
+    }
+
+    #[Test]
+    public function it_has_topics(): void
+    {
+        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
+
+        $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+
+        $this->assertCount(1, $subscription->topics);
+        $this->assertSame('order.placed', $subscription->topics->first()->id);
+    }
+
+    #[Test]
+    public function it_sets_subscriber_via_fill(): void
+    {
+        $subscriber = Subscriber::factory()->create();
+
+        $subscription = new Subscription;
+        $subscription->fill(['subscriber' => $subscriber]);
+
+        $this->assertSame($subscriber->getMorphClass(), $subscription->subscriber_type);
+        $this->assertSame($subscriber->getKey(), $subscription->subscriber_id);
+    }
+
+    #[Test]
+    public function it_defaults_to_active_status(): void
+    {
+        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
+
+        $this->assertSame(Status\Status::Active, $subscription->status->enum);
     }
 }

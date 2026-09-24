@@ -134,23 +134,28 @@ You do not register a sending listener. The package handles delivery.
 
 ### Step 5: Create subscriptions
 
-A `Subscription` records who wants which event, at what URL.
+A `Subscription` records who wants webhooks, at what URL, in what version. It
+subscribes to one or more events.
 
 ```php
 use Support\Webhooks\Subscriptions\Subscription;
 
 $subscription = new Subscription;
-$subscription->subscriber = $organization;
 $subscription->fill([
-    'event' => 'article.updating',
+    'subscriber' => $organization,
     'url' => 'https://example.com/webhooks',
     'version' => ApiVersion::V1->value,
 ]);
 $subscription->save();
+
+$subscription->topics()->attach(['article.updating', 'article.deleting']);
 ```
 
 The `secret` is generated automatically. Return it once to the subscriber so
 they can verify signatures. You build the API or UI for managing subscriptions.
+
+A subscription cannot subscribe to the same event twice — the pivot enforces a
+unique constraint. Deleting a subscription detaches its topics via a listener.
 
 That is everything you need. Events that implement `Webhook` are now delivered
 as signed CloudEvents to every matching active subscription.
@@ -251,17 +256,24 @@ the counter.
 | `id` | uuid | Primary key. |
 | `subscriber_type` | string | Polymorphic owner type. |
 | `subscriber_id` | uuid | Polymorphic owner id. |
-| `event` | string | The event alias (e.g. `article.updating`). |
 | `url` | string | The delivery endpoint. |
 | `version` | string, nullable | Which payload version to send. `null` sends the full payload. |
 | `headers` | json, nullable | Custom headers to include with every delivery. |
 | `secret` | string | HMAC signing secret, auto-generated. |
 | `status` | string | `active`, `inactive`, or `disabled`. |
 
+Topics live in `webhook_subscription_topics`, one row per subscribed topic:
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | uuid | Primary key. |
+| `webhook_subscription_id` | uuid | FK to `webhook_subscriptions`. |
+| `event_log_transportable_id` | string | FK to `event_log_transportables.id`. |
+
 ### Builder scopes
 
 ```php
-Subscription::for('article.updating')         // where event = ...
+Subscription::for('article.updating')        // has a topic with this alias
 Subscription::active()                      // where status = active
 Subscription::inactive()                    // where status = inactive
 Subscription::disabled()                    // where status = disabled
@@ -290,27 +302,27 @@ Everything above works without customization. This section is optional.
 
 ### Extend the model
 
-If you need to add casts, relationships, or other behavior to `Subscription`,
-create a subclass and register it in a service provider.
+Both `Subscription` and `Topic` implement `Swappable`. To add casts,
+relationships, or other behavior, create a subclass and register it in a service
+provider.
 
 ```php
+use Illuminate\Database\Eloquent\Attributes\CollectedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Support\Webhooks\Subscriptions\Builder\Builder;
-use Support\Webhooks\Subscriptions\Factory;
+use Support\Webhooks\Subscriptions\Collection\Subscriptions;
+use Support\Webhooks\Subscriptions\Factory\Factory;
 use Support\Webhooks\Subscriptions\Subscription as BaseSubscription;
 
+#[CollectedBy(Subscriptions::class)]
 #[UseEloquentBuilder(Builder::class)]
 #[UseFactory(Factory::class)]
 class Subscription extends BaseSubscription
 {
-    protected function casts(): array
-    {
-        return [
-            ...parent::casts(),
-            'version' => ApiVersion::class,
-        ];
-    }
+    protected $casts = [
+        'version' => ApiVersion::class,
+    ];
 }
 ```
 
@@ -319,8 +331,13 @@ class Subscription extends BaseSubscription
 \Support\Webhooks\Subscriptions\Subscription::use(App\Models\Subscription::class);
 ```
 
-PHP does not inherit attributes. The subclass must redeclare
-`#[UseEloquentBuilder]` and `#[UseFactory]`.
+PHP does not inherit attributes. The subclass must redeclare `#[CollectedBy]`,
+`#[UseEloquentBuilder]`, and `#[UseFactory]`. If any are missing, the sealed
+traits throw `MissingAttribute` at runtime.
+
+Use the `$casts` property, not the `casts()` method. The `Swapper` merges
+properties from the parent and subclass — a method override would replace the
+parent's casts instead of extending them.
 
 **What this gives you.** With `version` cast to your enum, the collecting
 listener gets simpler — no `::from()` call:

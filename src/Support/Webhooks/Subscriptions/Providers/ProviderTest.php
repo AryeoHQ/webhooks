@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Support\Webhooks\Providers;
+namespace Support\Webhooks\Subscriptions\Providers;
 
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use Support\Webhooks\Sending\Events\NeedsSent;
-use Support\Webhooks\Sending\Listeners\Deliver;
+use Support\Events\Log\Deliveries\Status\Events\Failed;
+use Support\Webhooks\Subscriptions\Listeners\AutoDisable;
 use Tests\TestCase;
 
 #[CoversClass(Provider::class)]
 final class ProviderTest extends TestCase
 {
     #[Test]
-    public function it_registers_the_sending_listener(): void
+    public function it_registers_the_auto_disable_listener(): void
     {
         Event::fake();
-        Event::assertListening(NeedsSent::class, Deliver::class);
+        Event::assertListening(Failed::class, AutoDisable::class);
     }
 }

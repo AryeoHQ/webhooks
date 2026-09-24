@@ -1,9 +1,0 @@
-services:
-    -
-        class: Tooling\Webhooks\PhpStan\SubscriptionMustRedeclareUseEloquentBuilder
-        tags:
-            - phpstan.rules.rule
-    -
-        class: Tooling\Webhooks\PhpStan\SubscriptionMustRedeclareUseFactory
-        tags:
-            - phpstan.rules.rule

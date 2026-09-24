@@ -4,30 +4,31 @@ declare(strict_types=1);
 
 namespace Support\Webhooks\Subscriptions\Builder;
 
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Support\Webhooks\Subscriptions\Status\Status;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Builder<\Support\Webhooks\Subscriptions\Subscription>
  */
-class Builder extends EloquentBuilder
+class Builder extends \Illuminate\Database\Eloquent\Builder
 {
-    public function for(string $alias): self
+    final public function for(string $alias): self
     {
-        return $this->where('event', $alias);
+        return $this->whereHas(
+            'topics', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('event_log_transportable_id', $alias)
+        );
     }
 
-    public function active(): self
+    final public function active(): self
     {
         return $this->where('status', Status::Active);
     }
 
-    public function inactive(): self
+    final public function inactive(): self
     {
         return $this->where('status', Status::Inactive);
     }
 
-    public function disabled(): self
+    final public function disabled(): self
     {
         return $this->where('status', Status::Disabled);
     }

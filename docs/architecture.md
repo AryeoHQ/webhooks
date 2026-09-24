@@ -30,18 +30,33 @@ the `recipient`.
 | `id` | uuid | Primary key. |
 | `subscriber_type` | string | Polymorphic owner type (e.g. `Organization`). |
 | `subscriber_id` | uuid | Polymorphic owner id. |
-| `event` | string | The `#[Alias]` value this subscription receives. Indexed. |
 | `url` | string | The endpoint the webhook is POSTed to. Read at send time, not at creation time — if the URL changes, the next delivery uses the new value. |
 | `version` | string, nullable | Which payload version the subscriber wants. Passed through to `Envelope::make()`. `null` means the full payload. |
 | `headers` | json, nullable | Custom HTTP headers merged into every delivery. |
-| `secret` | string | HMAC-SHA256 signing key. Auto-generated when the model is instantiated. Not mass-assignable. |
+| `secret` | string | HMAC-SHA256 signing key. Auto-generated on creation. Not mass-assignable. |
 | `status` | string | The subscription's status: `active`, `inactive`, or `disabled`. See [state-machines.md](state-machines.md). |
+
+### Table: `webhook_subscription_topics`
+
+One row per topic a subscription listens to. A subscription has one URL, one
+secret, and one version, but many topics.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | uuid | Primary key. |
+| `webhook_subscription_id` | uuid | FK to `webhook_subscriptions`. |
+| `event_log_transportable_id` | string | FK to `event_log_transportables.id`. |
+
+`(webhook_subscription_id, event_log_transportable_id)` is unique, so a
+subscription cannot subscribe to the same event twice.
+`(event_log_transportable_id, webhook_subscription_id)` is indexed for the
+collecting listener's lookup.
 
 ### Secret generation
 
-The `GeneratesSecret` trait runs an `initializeGeneratesSecret` method on every
-instantiation. If `secret` is not already set, it generates a 64-character random
-string. An explicitly provided secret is preserved.
+The `GeneratesSecret` trait registers a `creating` listener that sets `secret`
+to a 64-character random string if one is not already set. An explicitly
+provided secret is preserved.
 
 The secret is not mass-assignable. The consumer decides how and when to expose it
 (for example, returning it once in the API response that creates the
@@ -49,10 +64,12 @@ subscription).
 
 ### The subscriber relationship
 
-The `subscriber` is a `MorphTo` relationship. The columns are not mass-assignable.
-Use the mutator:
+The `subscriber` is a `MorphTo` relationship. Set it via `fill()` or direct
+assignment — both go through the `setSubscriberAttribute` mutator:
 
 ```php
+$subscription->fill(['subscriber' => $organization]);
+// or
 $subscription->subscriber = $organization;
 ```
 
@@ -65,7 +82,7 @@ four scopes:
 
 | Scope | SQL |
 |---|---|
-| `for($alias)` | `where event = $alias` |
+| `for($alias)` | `whereHas('topics', fn ($query) => $query->where('event_log_transportable_id', $alias))` |
 | `active()` | `where status = 'active'` |
 | `inactive()` | `where status = 'inactive'` |
 | `disabled()` | `where status = 'disabled'` |
@@ -171,13 +188,18 @@ webhook jobs to a dedicated queue.
 ```php
 $response = Webhook::make($event->delivery)->deliver();
 $event->record(Result::make(message: $response->body(), code: $response->status()));
-$response->throw();
+match ($response->status()) {
+    410, 421 => throw new Undeliverable("HTTP {$response->status()}"),
+    default => $response->throw(),
+};
 ```
 
 1. Build the webhook and POST it.
 2. Record the response body and status code on the delivery attempt.
-3. Throw on non-2xx — the exception propagates through event-log's failure
-   pipeline.
+3. If the response is 410 (Gone) or 421 (Misdirected Request), throw
+   `Undeliverable` — event-log stops retrying.
+4. Otherwise throw on non-2xx — the exception propagates through event-log's
+   failure pipeline and the delivery is retried.
 
 The recorded result survives the throw. event-log writes it in a `finally`, and
 only falls back to the exception message when the listener recorded nothing —

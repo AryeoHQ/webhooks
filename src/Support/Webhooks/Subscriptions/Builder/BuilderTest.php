@@ -6,6 +6,7 @@ namespace Support\Webhooks\Subscriptions\Builder;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Support\Events\Log\Transportables\Transportable;
 use Support\Webhooks\Subscriptions\Subscription;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
 use Tests\TestCase;
@@ -14,17 +15,35 @@ use Tests\TestCase;
 final class BuilderTest extends TestCase
 {
     #[Test]
-    public function where_event_scopes_by_alias(): void
+    public function for_scopes_by_topic_alias(): void
     {
+        $orderPlaced = Transportable::factory()->create(['id' => 'order.placed']);
+        $orderCancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
+
         $subscriber = Subscriber::factory()->create();
 
-        Subscription::factory()->for($subscriber)->create(['event' => 'order.placed']);
-        Subscription::factory()->for($subscriber)->create(['event' => 'order.cancelled']);
+        $placed = Subscription::factory()->for($subscriber)->hasAttached($orderPlaced, [], 'topics')->create();
+
+        Subscription::factory()->for($subscriber)->hasAttached($orderCancelled, [], 'topics')->create();
 
         $results = Subscription::for('order.placed')->get();
 
         $this->assertCount(1, $results);
-        $this->assertSame('order.placed', $results->first()->event);
+        $this->assertTrue($placed->is($results->first()));
+    }
+
+    #[Test]
+    public function for_includes_subscription_subscribed_to_multiple_topics(): void
+    {
+        $orderPlaced = Transportable::factory()->create(['id' => 'order.placed']);
+        $orderCancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
+
+        $subscriber = Subscriber::factory()->create();
+
+        $subscription = Subscription::factory()->for($subscriber)->hasAttached([$orderPlaced, $orderCancelled], [], 'topics')->create();
+
+        $this->assertTrue($subscription->is(Subscription::for('order.placed')->sole()));
+        $this->assertTrue($subscription->is(Subscription::for('order.cancelled')->sole()));
     }
 
     #[Test]
