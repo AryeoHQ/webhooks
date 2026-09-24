@@ -22,7 +22,7 @@
     "require": {
         "php": "^8.4",
         "laravel/framework": "^12.37",
-        "aryeo/event-log": "0.0.3",
+        "aryeo/event-log": "0.0.4",
         "aryeo/eloquent-state-machines": "0.0.32",
         "cloudevents/sdk-php": "^1.2",
         "nesbot/carbon": "^3.11",
