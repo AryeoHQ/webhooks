@@ -4,7 +4,7 @@ description: "Setup PHP with extensions."
 inputs:
   composer_version:
     description: 'The Composer version to setup'
-    default: '2.2.x'
+    default: 'latest'
     required: false
   coverage:
     description: 'The PHP coverage driver to setup'
@@ -47,6 +47,7 @@ runs:
         coverage: ${{ inputs.coverage }}
         extensions: ${{ inputs.extensions }}
         php-version: ${{ inputs.php_version }}
+        tools: composer:${{ inputs.composer_version }}
 
     - name: Cache Composer dependencies
       uses: actions/cache@v4

@@ -70,6 +70,10 @@ class Subscription extends Model implements Swappable
         'headers',
     ];
 
+    protected $hidden = [
+        'secret',
+    ];
+
     protected $attributes = [
         'status' => Status::Active,
     ];

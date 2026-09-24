@@ -27,7 +27,7 @@ final class WebhookTest extends TestCase
         $this->assertSame($delivery->id, $webhook->id);
         $this->assertSame($delivery->relay->log->type, $webhook->type);
         $this->assertSame($delivery->payload, $webhook->data);
-        $this->assertTrue($delivery->relay->log->occurred_at->equalTo($webhook->time));
+        $this->assertTrue($delivery->relay->log->occurred_at->equalTo($webhook->occurredAt));
     }
 
     #[Test]

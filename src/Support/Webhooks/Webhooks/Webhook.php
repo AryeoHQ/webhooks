@@ -30,8 +30,8 @@ class Webhook
         get => $this->data ??= $this->delivery->payload;
     }
 
-    public private(set) CarbonImmutable $time {
-        get => $this->time ??= $this->delivery->relay->log->occurred_at;
+    public private(set) CarbonImmutable $occurredAt {
+        get => $this->occurredAt ??= $this->delivery->relay->log->occurred_at;
     }
 
     public private(set) string $payload {
@@ -46,7 +46,7 @@ class Webhook
         get => $this->signature ??= hash_hmac('sha256', "{$this->timestamp}.{$this->payload}", $this->subscription->secret);
     }
 
-    /** @var array<string, string> */
+    /** @var array<string, string|int> */
     public private(set) array $headers {
         get => $this->headers ??= [
             ...$this->subscription->headers ?? [],
@@ -68,7 +68,7 @@ class Webhook
             type: $this->type,
             data: $this->data,
             dataContentType: 'application/json',
-            time: $this->time,
+            time: $this->occurredAt,
         );
     }
 

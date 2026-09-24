@@ -98,6 +98,14 @@ final class SubscriptionTest extends TestCase
     }
 
     #[Test]
+    public function it_hides_the_secret(): void
+    {
+        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
+
+        $this->assertArrayNotHasKey('secret', $subscription->toArray());
+    }
+
+    #[Test]
     public function it_defaults_to_active_status(): void
     {
         $subscription = Subscription::factory()->for(Subscriber::factory())->create();
