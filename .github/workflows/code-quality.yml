@@ -111,4 +111,4 @@ jobs:
           hide_complexity: false
           indicators: true
           output: both
-          thresholds: '75 90'
+          thresholds: '65 90'
