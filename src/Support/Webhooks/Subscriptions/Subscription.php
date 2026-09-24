@@ -122,7 +122,7 @@ class Subscription extends Model implements Swappable
     final public function topics(): BelongsToMany
     {
         return $this->belongsToMany(Transportable::using(), 'webhook_subscription_topics', 'webhook_subscription_id', 'event_log_transportable_id')
-            ->using(Topic::class)
+            ->using(Topic::using())
             ->withTimestamps();
     }
 }

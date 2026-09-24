@@ -12,6 +12,7 @@ use Support\Webhooks\Subscriptions\Events\Deleting as SubscriptionDeleting;
 use Support\Webhooks\Subscriptions\Subscription;
 use Support\Webhooks\Topics\Listeners\Cleanup;
 use Support\Webhooks\Topics\Listeners\Detach;
+use Support\Webhooks\Topics\Topic;
 
 class Provider extends ServiceProvider
 {
@@ -25,7 +26,9 @@ class Provider extends ServiceProvider
     private function bootRelationships(): void
     {
         Transportable::resolveRelationUsing('webhookSubscriptions', function (Transportable $transportable) {
-            return $transportable->belongsToMany(Subscription::using(), 'webhook_subscription_topics', 'event_log_transportable_id', 'webhook_subscription_id');
+            return $transportable->belongsToMany(Subscription::using(), 'webhook_subscription_topics', 'event_log_transportable_id', 'webhook_subscription_id')
+                ->using(Topic::using())
+                ->withTimestamps();
         });
     }
 
