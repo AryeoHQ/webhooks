@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('subscriber_type');
             $table->uuid('subscriber_id');
 
-            $table->string('url');
+            $table->text('url');
             $table->string('version')->nullable();
             $table->json('headers')->nullable();
             $table->string('secret');
