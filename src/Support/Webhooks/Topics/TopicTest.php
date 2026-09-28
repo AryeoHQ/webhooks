@@ -8,11 +8,11 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Transportables\Transportable;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 use Support\Webhooks\Topics\Listeners\Cleanup;
 use Support\Webhooks\Topics\Listeners\Detach;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
-use Tests\Fixtures\Support\Webhooks\Subscriptions\Subscription as ExtendedSubscription;
+use Tests\Fixtures\Support\Webhooks\Endpoints\Endpoint as ExtendedEndpoint;
 use Tests\TestCase;
 
 #[CoversClass(Topic::class)]
@@ -21,15 +21,15 @@ use Tests\TestCase;
 final class TopicTest extends TestCase
 {
     #[Test]
-    public function it_belongs_to_a_subscription(): void
+    public function it_belongs_to_an_endpoint(): void
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
 
-        $pivot = $subscription->topics->first()->pivot;
+        $pivot = $endpoint->topics->first()->pivot;
 
-        $this->assertTrue($subscription->is($pivot->subscription));
+        $this->assertTrue($endpoint->is($pivot->endpoint));
     }
 
     #[Test]
@@ -37,62 +37,62 @@ final class TopicTest extends TestCase
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
 
-        $pivot = $subscription->topics->first()->pivot;
+        $pivot = $endpoint->topics->first()->pivot;
 
         $this->assertSame('order.placed', $pivot->transportable->id);
     }
 
     #[Test]
-    public function a_subscription_cannot_subscribe_to_the_same_topic_twice(): void
+    public function an_endpoint_cannot_subscribe_to_the_same_topic_twice(): void
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
 
         $this->expectException(UniqueConstraintViolationException::class);
 
-        $subscription->topics()->attach($transportable);
+        $endpoint->topics()->attach($transportable);
     }
 
     #[Test]
-    public function two_subscriptions_can_subscribe_to_the_same_event(): void
+    public function two_endpoints_can_subscribe_to_the_same_event(): void
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
         $subscriber = Subscriber::factory()->create();
 
-        Subscription::factory()->for($subscriber)->hasAttached($transportable, [], 'topics')->create();
-        Subscription::factory()->for($subscriber)->hasAttached($transportable, [], 'topics')->create();
+        Endpoint::factory()->for($subscriber)->hasAttached($transportable, [], 'topics')->create();
+        Endpoint::factory()->for($subscriber)->hasAttached($transportable, [], 'topics')->create();
 
         $this->assertSame(2, Topic::query()->where('event_log_transportable_id', 'order.placed')->count()); // @phpstan-ignore staticMethod.dynamicCall
     }
 
     #[Test]
-    public function deleting_a_subscription_deletes_its_topics(): void
+    public function deleting_an_endpoint_deletes_its_topics(): void
     {
         $placed = Transportable::factory()->create(['id' => 'order.placed']);
         $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
-        $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'topics')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'topics')->create();
 
-        $subscription->delete();
+        $endpoint->delete();
 
         $this->assertSame(0, Topic::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
     }
 
     #[Test]
-    public function deleting_a_subscription_leaves_other_subscriptions_topics_alone(): void
+    public function deleting_an_endpoint_leaves_other_endpoints_topics_alone(): void
     {
         $placed = Transportable::factory()->create(['id' => 'order.placed']);
         $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
         $subscriber = Subscriber::factory()->create();
 
-        $deleted = Subscription::factory()->for($subscriber)->hasAttached($placed, [], 'topics')->create();
+        $deleted = Endpoint::factory()->for($subscriber)->hasAttached($placed, [], 'topics')->create();
 
-        $kept = Subscription::factory()->for($subscriber)->hasAttached($cancelled, [], 'topics')->create();
+        $kept = Endpoint::factory()->for($subscriber)->hasAttached($cancelled, [], 'topics')->create();
 
         $deleted->delete();
 
@@ -100,22 +100,22 @@ final class TopicTest extends TestCase
     }
 
     #[Test]
-    public function deleting_an_extended_subscription_deletes_its_topics(): void
+    public function deleting_an_extended_endpoint_deletes_its_topics(): void
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        Subscription::use(ExtendedSubscription::class);
+        Endpoint::use(ExtendedEndpoint::class);
 
         try {
-            $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+            $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
 
-            $this->assertInstanceOf(ExtendedSubscription::class, $subscription);
+            $this->assertInstanceOf(ExtendedEndpoint::class, $endpoint);
 
-            $subscription->delete();
+            $endpoint->delete();
 
             $this->assertSame(0, Topic::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
         } finally {
-            Subscription::use(Subscription::class);
+            Endpoint::use(Endpoint::class);
         }
     }
 
@@ -125,7 +125,7 @@ final class TopicTest extends TestCase
         $placed = Transportable::factory()->create(['id' => 'order.placed']);
         $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
-        Subscription::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'topics')->create();
+        Endpoint::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'topics')->create();
 
         $placed->delete();
 

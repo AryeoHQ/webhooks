@@ -10,7 +10,7 @@ use Support\Events\Log\DeliveryAttempts\DeliveryAttempt;
 use Support\Events\Log\Envelopes\Envelope;
 use Support\Events\Log\Logs\Log;
 use Support\Events\Log\Relays\Relay;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 use Tests\Fixtures\Support\Entities\Subscriber\Events\Updated;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
 
@@ -32,7 +32,7 @@ final class Webhook
                     ->for(Relay::factory()->webhook($transport), 'relay')
                     ->state(fn (): array => [
                         'envelope' => Envelope::make(
-                            recipient: Subscription::factory()->for(Subscriber::factory())->create(),
+                            recipient: Endpoint::factory()->for(Subscriber::factory())->create(),
                         ),
                     ]),
                 DeliveryAttempt::class => $this

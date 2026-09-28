@@ -5,19 +5,19 @@ Built on [event-log](https://github.com/AryeoHQ/event-log).
 
 ## What this package does
 
-It stores subscriptions, builds the CloudEvent, signs it, and sends it. It also
-disables a subscription that keeps failing.
+It stores endpoints, builds the CloudEvent, signs it, and sends it. It also
+disables an endpoint that keeps failing.
 
-You write the listener that decides which subscriptions receive each event. Only
-you know how to scope subscriptions to the right subscriber.
+You write the listener that decides which endpoints receive each event. Only
+you know how to scope endpoints to the right subscriber.
 
 ## What it does not do
 
 | Concern | Where it belongs |
 |---|---|
 | Replay a delivery by hand | Your application. Automatic retries happen (see [Retries](#retries)). event-log gives you a retry trigger, but nothing calls it — build the command or endpoint you need. |
-| Prune old delivery records | Your application. event-log owns those tables but ships no pruning, so schedule your own. Our one table holds subscriptions, which are configuration, not transient data. |
-| Tell a subscriber they were disabled | Your application. We fire an event when a subscription is disabled. You choose the channel. |
+| Prune old delivery records | Your application. event-log owns those tables but ships no pruning, so schedule your own. Our one table holds endpoints, which are configuration, not transient data. |
+| Tell a subscriber they were disabled | Your application. We fire an event when an endpoint is disabled. You choose the channel. |
 | Verify a signature | The receiving application. See [Signature verification](#signature-verification) for the algorithm. |
 | Keep webhook traffic away from internal services | Your infrastructure. See [Isolate webhook egress](#isolate-webhook-egress). |
 
@@ -69,7 +69,7 @@ transport.
 
 ### Step 2: Define your version enum
 
-Each subscription stores which payload version the subscriber wants. event-log
+Each endpoint stores which payload version the subscriber wants. event-log
 uses this to slice the right shape of data from the log. Define a `BackedEnum`
 that implements the `Version` interface from event-log. In most applications
 this maps to your API versions:
@@ -84,30 +84,30 @@ enum ApiVersion: string implements Version
 }
 ```
 
-The subscription's `version` column stores the string value (e.g. `'v1'`).
+The endpoint's `version` column stores the string value (e.g. `'v1'`).
 
 ### Step 3: Write a collecting listener
 
 The package sends the HTTP requests, but only you know who should receive them.
-Write a listener that finds the right subscriptions and builds an envelope for
+Write a listener that finds the right endpoints and builds an envelope for
 each one.
 
 ```php
 use Support\Events\Log\Envelopes\Envelope;
 use Support\Webhooks\Collecting\Events\NeedsEnvelopes;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 
 final class GatherWebhookEnvelopes
 {
     public function handle(NeedsEnvelopes $event): void
     {
-        Subscription::for($event->relay->log->type)->active()
+        Endpoint::for($event->relay->log->type)->active()
             ->where('subscriber_type', Organization::class)
             ->where('subscriber_id', $event->relay->log->loggable->organization_id)
-            ->each(fn (Subscription $subscription) => $event->add(
+            ->each(fn (Endpoint $endpoint) => $event->add(
                 Envelope::make(
-                    recipient: $subscription,
-                    version: $subscription->version ? ApiVersion::from($subscription->version) : null,
+                    recipient: $endpoint,
+                    version: $endpoint->version ? ApiVersion::from($endpoint->version) : null,
                 ),
             ));
     }
@@ -132,33 +132,33 @@ Event::listen(NeedsEnvelopes::class, GatherWebhookEnvelopes::class);
 
 You do not register a sending listener. The package handles delivery.
 
-### Step 5: Create subscriptions
+### Step 5: Create endpoints
 
-A `Subscription` records who wants webhooks, at what URL, in what version. It
+An `Endpoint` records who wants webhooks, at what URL, in what version. It
 subscribes to one or more events.
 
 ```php
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 
-$subscription = new Subscription;
-$subscription->fill([
+$endpoint = new Endpoint;
+$endpoint->fill([
     'subscriber' => $organization,
     'url' => 'https://example.com/webhooks',
     'version' => ApiVersion::V1->value,
 ]);
-$subscription->save();
+$endpoint->save();
 
-$subscription->topics()->attach(['article.updating', 'article.deleting']);
+$endpoint->topics()->attach(['article.updating', 'article.deleting']);
 ```
 
 The `secret` is generated automatically. Return it once to the subscriber so
-they can verify signatures. You build the API or UI for managing subscriptions.
+they can verify signatures. You build the API or UI for managing endpoints.
 
-A subscription cannot subscribe to the same event twice — the pivot enforces a
-unique constraint. Deleting a subscription detaches its topics via a listener.
+An endpoint cannot subscribe to the same event twice — the pivot enforces a
+unique constraint. Deleting an endpoint detaches its topics via a listener.
 
 That is everything you need. Events that implement `Webhook` are now delivered
-as signed CloudEvents to every matching active subscription.
+as signed CloudEvents to every matching active endpoint.
 
 ---
 
@@ -191,7 +191,7 @@ structured-mode JSON message:
 | `Timestamp` | Unix timestamp of when the request was built. |
 | `Signature` | HMAC-SHA256 hex digest. |
 
-Custom headers from the subscription's `headers` column are included too. The
+Custom headers from the endpoint's `headers` column are included too. The
 package sets its headers last, so a custom header cannot override them.
 
 ### Signature verification
@@ -221,7 +221,7 @@ cannot change the timestamp to look fresh without breaking the signature.
 A subscriber chooses the URL we deliver to. Route webhook traffic out a network
 path with no route to your internal services.
 
-Without this, a subscriber can point a subscription at an internal address and
+Without this, a subscriber can point an endpoint at an internal address and
 make your workers send a signed request there. We record the response body on
 the delivery attempt, so if subscribers can see their own delivery history they
 can read what the internal service returned.
@@ -240,14 +240,14 @@ delivery attempt row.
 
 ### Auto-disable
 
-When a subscription accumulates consecutive terminal delivery failures, the
-package moves it to `Disabled`. The threshold is `WEBHOOKS_SUBSCRIPTION_FAILURE_THRESHOLD`
+When an endpoint accumulates consecutive terminal delivery failures, the
+package moves it to `Disabled`. The threshold is `WEBHOOKS_ENDPOINT_FAILURE_THRESHOLD`
 (default 10). Set to `0` to turn it off. A single successful delivery resets
 the counter.
 
 ---
 
-## Subscriptions in detail
+## Endpoints in detail
 
 ### Schema
 
@@ -256,27 +256,27 @@ the counter.
 | `id` | uuid | Primary key. |
 | `subscriber_type` | string | Polymorphic owner type. |
 | `subscriber_id` | uuid | Polymorphic owner id. |
-| `url` | string | The delivery endpoint. |
+| `url` | string | The delivery URL. |
 | `version` | string, nullable | Which payload version to send. `null` sends the full payload. |
 | `headers` | json, nullable | Custom headers to include with every delivery. |
 | `secret` | string | HMAC signing secret, auto-generated. |
 | `status` | string | `active`, `inactive`, or `disabled`. |
 
-Topics live in `webhook_subscription_topics`, one row per subscribed topic:
+Topics live in `webhook_endpoint_topics`, one row per subscribed topic:
 
 | Column | Type | Description |
 |---|---|---|
 | `id` | uuid | Primary key. |
-| `webhook_subscription_id` | uuid | FK to `webhook_subscriptions`. |
+| `webhook_endpoint_id` | uuid | FK to `webhook_endpoints`. |
 | `event_log_transportable_id` | string | FK to `event_log_transportables.id`. |
 
 ### Builder scopes
 
 ```php
-Subscription::for('article.updating')        // has a topic with this alias
-Subscription::active()                      // where status = active
-Subscription::inactive()                    // where status = inactive
-Subscription::disabled()                    // where status = disabled
+Endpoint::for('article.updating')        // has a topic with this alias
+Endpoint::active()                      // where status = active
+Endpoint::inactive()                    // where status = inactive
+Endpoint::disabled()                    // where status = disabled
 ```
 
 ### Status state machine
@@ -289,9 +289,9 @@ Disabled ──▶ Active    (user reactivates)
 ```
 
 ```php
-$subscription->status->deactivate()->now();
-$subscription->status->activate()->now();
-$subscription->status->disable()->now();
+$endpoint->status->deactivate()->now();
+$endpoint->status->activate()->now();
+$endpoint->status->disable()->now();
 ```
 
 ---
@@ -302,7 +302,7 @@ Everything above works without customization. This section is optional.
 
 ### Extend the model
 
-Both `Subscription` and `Topic` implement `Swappable`. To add casts,
+Both `Endpoint` and `Topic` implement `Swappable`. To add casts,
 relationships, or other behavior, create a subclass and register it in a service
 provider.
 
@@ -310,15 +310,15 @@ provider.
 use Illuminate\Database\Eloquent\Attributes\CollectedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
-use Support\Webhooks\Subscriptions\Builder\Builder;
-use Support\Webhooks\Subscriptions\Collection\Subscriptions;
-use Support\Webhooks\Subscriptions\Factory\Factory;
-use Support\Webhooks\Subscriptions\Subscription as BaseSubscription;
+use Support\Webhooks\Endpoints\Builder\Builder;
+use Support\Webhooks\Endpoints\Collection\Endpoints;
+use Support\Webhooks\Endpoints\Endpoint as BaseEndpoint;
+use Support\Webhooks\Endpoints\Factory\Factory;
 
-#[CollectedBy(Subscriptions::class)]
+#[CollectedBy(Endpoints::class)]
 #[UseEloquentBuilder(Builder::class)]
 #[UseFactory(Factory::class)]
-class Subscription extends BaseSubscription
+class Endpoint extends BaseEndpoint
 {
     protected $casts = [
         'version' => ApiVersion::class,
@@ -328,7 +328,7 @@ class Subscription extends BaseSubscription
 
 ```php
 // AppServiceProvider::boot()
-\Support\Webhooks\Subscriptions\Subscription::use(App\Models\Subscription::class);
+\Support\Webhooks\Endpoints\Endpoint::use(App\Models\Endpoint::class);
 ```
 
 PHP does not inherit attributes. The subclass must redeclare `#[CollectedBy]`,
@@ -343,7 +343,7 @@ parent's casts instead of extending them.
 listener gets simpler — no `::from()` call:
 
 ```php
-Envelope::make(recipient: $subscription, version: $subscription->version)
+Envelope::make(recipient: $endpoint, version: $endpoint->version)
 ```
 
 ---
@@ -356,7 +356,7 @@ Envelope::make(recipient: $subscription, version: $subscription->version)
 | `WEBHOOKS_QUEUE_SENDING` | _(default)_ | Queue for the delivery processing job. |
 | `WEBHOOKS_TIMEOUT_CONNECT` | `5` | Seconds to wait for a TCP connection. |
 | `WEBHOOKS_TIMEOUT_REQUEST` | `10` | Seconds to wait for the full request. |
-| `WEBHOOKS_SUBSCRIPTION_FAILURE_THRESHOLD` | `10` | Consecutive failures before auto-disable. `0` to never auto-disable. |
+| `WEBHOOKS_ENDPOINT_FAILURE_THRESHOLD` | `10` | Consecutive failures before auto-disable. `0` to never auto-disable. |
 
 ---
 
@@ -364,5 +364,5 @@ Envelope::make(recipient: $subscription, version: $subscription->version)
 
 - [Architecture](docs/architecture.md) — the Webhook object, CloudEvents
   structure, signing scheme, and queue resolution.
-- [State machines](docs/state-machines.md) — subscription status transitions,
+- [State machines](docs/state-machines.md) — endpoint status transitions,
   triggers, and events.

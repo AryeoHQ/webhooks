@@ -10,6 +10,6 @@ class Detach
 {
     public function handle(Deleting $event): void
     {
-        $event->transportable->webhookSubscriptions()->detach(); // @phpstan-ignore method.notFound
+        $event->transportable->webhookEndpoints()->detach(); // @phpstan-ignore method.notFound
     }
 }

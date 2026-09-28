@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Support\Events\Database\Eloquent\Swappable\Models\Concerns\SupportsSwapping;
 use Support\Events\Database\Eloquent\Swappable\Models\Contracts\Swappable;
 use Support\Events\Log\Transportables\Transportable;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 use Support\Webhooks\Topics\Builder\Builder;
 use Support\Webhooks\Topics\Collection\Topics;
 use Support\Webhooks\Topics\Factory\Factory;
 
 /**
  * @property string $event_log_transportable_id
- * @property string $webhook_subscription_id
+ * @property string $webhook_endpoint_id
  */
 #[CollectedBy(Topics::class)]
 #[UseEloquentBuilder(Builder::class)]
@@ -37,7 +37,7 @@ class Topic extends Pivot implements Swappable
 
     final public $incrementing = false;
 
-    final protected $table = 'webhook_subscription_topics';
+    final protected $table = 'webhook_endpoint_topics';
 
     final protected $primaryKey = 'id';
 
@@ -74,11 +74,11 @@ class Topic extends Pivot implements Swappable
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\Support\Webhooks\Subscriptions\Subscription, $this>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\Support\Webhooks\Endpoints\Endpoint, $this>
      */
-    final public function subscription(): BelongsTo
+    final public function endpoint(): BelongsTo
     {
-        return $this->belongsTo(Subscription::using(), 'webhook_subscription_id');
+        return $this->belongsTo(Endpoint::using(), 'webhook_endpoint_id');
     }
 
     /**
