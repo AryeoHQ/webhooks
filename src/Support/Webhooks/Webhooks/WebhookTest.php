@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Deliveries\Delivery;
 use Support\Events\Log\Envelopes\Envelope;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
 use Tests\TestCase;
 
@@ -63,8 +63,8 @@ final class WebhookTest extends TestCase
     public function it_includes_idempotency_key_and_signature_headers(): void
     {
         $delivery = Delivery::factory()->webhook()->createQuietly();
-        /** @var Subscription $subscription */
-        $subscription = $delivery->recipient;
+        /** @var Endpoint $endpoint */
+        $endpoint = $delivery->recipient;
 
         $webhook = Webhook::make($delivery);
         $headers = $webhook->headers;
@@ -73,20 +73,20 @@ final class WebhookTest extends TestCase
         $this->assertSame($webhook->source, $headers['Source']);
         $this->assertSame($webhook->timestamp, $headers['Timestamp']);
 
-        $expected = hash_hmac('sha256', "{$webhook->timestamp}.{$webhook->payload}", $subscription->secret);
+        $expected = hash_hmac('sha256', "{$webhook->timestamp}.{$webhook->payload}", $endpoint->secret);
 
         $this->assertSame($expected, $headers['Signature']);
     }
 
     #[Test]
-    public function it_includes_custom_subscription_headers(): void
+    public function it_includes_custom_endpoint_headers(): void
     {
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create([
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create([
             'headers' => ['X-Custom' => 'value'],
         ]);
 
         $delivery = Delivery::factory()->webhook()->createQuietly([
-            'envelope' => Envelope::make(recipient: $subscription),
+            'envelope' => Envelope::make(recipient: $endpoint),
         ]);
 
         $headers = Webhook::make($delivery)->headers;
@@ -95,17 +95,17 @@ final class WebhookTest extends TestCase
     }
 
     #[Test]
-    public function it_delivers_to_the_subscription_url(): void
+    public function it_delivers_to_the_endpoint_url(): void
     {
         Http::fake(['*' => Http::response('ok')]);
 
         $delivery = Delivery::factory()->webhook()->createQuietly();
-        /** @var Subscription $subscription */
-        $subscription = $delivery->recipient;
+        /** @var Endpoint $endpoint */
+        $endpoint = $delivery->recipient;
 
         Webhook::make($delivery)->deliver();
 
-        Http::assertSent(fn (Request $request): bool => $request->url() === $subscription->url);
+        Http::assertSent(fn (Request $request): bool => $request->url() === $endpoint->url);
     }
 
     #[Test]

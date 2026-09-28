@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Deliveries\Delivery;
+use Support\Webhooks\Endpoints\Endpoint;
 use Support\Webhooks\Sending\Events\NeedsSent;
-use Support\Webhooks\Subscriptions\Subscription;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
 use Tests\TestCase;
 
@@ -18,20 +18,20 @@ use Tests\TestCase;
 final class DeliverTest extends TestCase
 {
     #[Test]
-    public function it_posts_to_the_subscription_url(): void
+    public function it_posts_to_the_endpoint_url(): void
     {
         Http::fake(['*' => Http::response('ok')]);
 
         $delivery = Delivery::factory()->webhook()->createQuietly();
 
-        /** @var Subscription $subscription */
-        $subscription = $delivery->recipient;
+        /** @var Endpoint $endpoint */
+        $endpoint = $delivery->recipient;
 
         $event = new NeedsSent($delivery);
 
         (new Deliver)->handle($event);
 
-        Http::assertSent(fn (Request $request): bool => $request->url() === $subscription->url);
+        Http::assertSent(fn (Request $request): bool => $request->url() === $endpoint->url);
     }
 
     #[Test]
@@ -55,32 +55,32 @@ final class DeliverTest extends TestCase
 
         $delivery = Delivery::factory()->webhook()->createQuietly();
 
-        /** @var Subscription $subscription */
-        $subscription = $delivery->recipient;
+        /** @var Endpoint $endpoint */
+        $endpoint = $delivery->recipient;
 
         $event = new NeedsSent($delivery);
 
         (new Deliver)->handle($event);
 
-        Http::assertSent(function (Request $request) use ($subscription): bool {
+        Http::assertSent(function (Request $request) use ($endpoint): bool {
             $timestamp = $request->header('Timestamp')[0];
-            $expected = hash_hmac('sha256', "{$timestamp}.{$request->body()}", $subscription->secret);
+            $expected = hash_hmac('sha256', "{$timestamp}.{$request->body()}", $endpoint->secret);
 
             return $request->header('Signature')[0] === $expected;
         });
     }
 
     #[Test]
-    public function it_includes_custom_headers_from_the_subscription(): void
+    public function it_includes_custom_headers_from_the_endpoint(): void
     {
         Http::fake(['*' => Http::response('ok')]);
 
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create([
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create([
             'headers' => ['X-Custom' => 'value'],
         ]);
 
         $delivery = Delivery::factory()->webhook()->createQuietly([
-            'envelope' => \Support\Events\Log\Envelopes\Envelope::make(recipient: $subscription),
+            'envelope' => \Support\Events\Log\Envelopes\Envelope::make(recipient: $endpoint),
         ]);
 
         $event = new NeedsSent($delivery);

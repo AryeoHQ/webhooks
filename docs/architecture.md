@@ -1,7 +1,7 @@
 # Architecture
 
-This document describes the Subscription model, the Webhook object, the
-CloudEvents payload, and the signing scheme. For the subscription status states,
+This document describes the Endpoint model, the Webhook object, the
+CloudEvents payload, and the signing scheme. For the endpoint status states,
 see [state-machines.md](state-machines.md).
 
 ## The transport interface
@@ -17,39 +17,39 @@ event-log's `Transport`. It carries two attributes:
 
 The interface has no methods. An event opts in by implementing it.
 
-## The Subscription model
+## The Endpoint model
 
-`Support\Webhooks\Subscriptions\Subscription` is the recipient model for the
+`Support\Webhooks\Endpoints\Endpoint` is the recipient model for the
 webhook transport. Event-log's `Delivery` holds a polymorphic reference to it as
 the `recipient`.
 
-### Table: `webhook_subscriptions`
+### Table: `webhook_endpoints`
 
 | Column | Type | Description |
 |---|---|---|
 | `id` | uuid | Primary key. |
 | `subscriber_type` | string | Polymorphic owner type (e.g. `Organization`). |
 | `subscriber_id` | uuid | Polymorphic owner id. |
-| `url` | string | The endpoint the webhook is POSTed to. Read at send time, not at creation time — if the URL changes, the next delivery uses the new value. |
+| `url` | string | The URL the webhook is POSTed to. Read at send time, not at creation time — if the URL changes, the next delivery uses the new value. |
 | `version` | string, nullable | Which payload version the subscriber wants. Passed through to `Envelope::make()`. `null` means the full payload. |
 | `headers` | json, nullable | Custom HTTP headers merged into every delivery. |
 | `secret` | string | HMAC-SHA256 signing key. Auto-generated on creation. Not mass-assignable. |
-| `status` | string | The subscription's status: `active`, `inactive`, or `disabled`. See [state-machines.md](state-machines.md). |
+| `status` | string | The endpoint's status: `active`, `inactive`, or `disabled`. See [state-machines.md](state-machines.md). |
 
-### Table: `webhook_subscription_topics`
+### Table: `webhook_subscriptions`
 
-One row per topic a subscription listens to. A subscription has one URL, one
-secret, and one version, but many topics.
+One row per event an endpoint listens to. An endpoint has one URL, one
+secret, and one version, but many subscriptions.
 
 | Column | Type | Description |
 |---|---|---|
 | `id` | uuid | Primary key. |
-| `webhook_subscription_id` | uuid | FK to `webhook_subscriptions`. |
+| `webhook_endpoint_id` | uuid | FK to `webhook_endpoints`. |
 | `event_log_transportable_id` | string | FK to `event_log_transportables.id`. |
 
-`(webhook_subscription_id, event_log_transportable_id)` is unique, so a
-subscription cannot subscribe to the same event twice.
-`(event_log_transportable_id, webhook_subscription_id)` is indexed for the
+`(webhook_endpoint_id, event_log_transportable_id)` is unique, so an
+endpoint cannot subscribe to the same event twice.
+`(event_log_transportable_id, webhook_endpoint_id)` is indexed for the
 collecting listener's lookup.
 
 ### Secret generation
@@ -60,7 +60,7 @@ provided secret is preserved.
 
 The secret is not mass-assignable. The consumer decides how and when to expose it
 (for example, returning it once in the API response that creates the
-subscription).
+endpoint).
 
 ### The subscriber relationship
 
@@ -68,26 +68,26 @@ The `subscriber` is a `MorphTo` relationship. Set it via `fill()` or direct
 assignment — both go through the `setSubscriberAttribute` mutator:
 
 ```php
-$subscription->fill(['subscriber' => $organization]);
+$endpoint->fill(['subscriber' => $organization]);
 // or
-$subscription->subscriber = $organization;
+$endpoint->subscriber = $organization;
 ```
 
 This sets `subscriber_type` and `subscriber_id` from the model.
 
 ### Builder scopes
 
-The custom `Builder` at `Support\Webhooks\Subscriptions\Builder\Builder` provides
+The custom `Builder` at `Support\Webhooks\Endpoints\Builder\Builder` provides
 four scopes:
 
 | Scope | SQL |
 |---|---|
-| `for($alias)` | `whereHas('topics', fn ($query) => $query->where('event_log_transportable_id', $alias))` |
+| `for($alias)` | `whereHas('events', fn ($query) => $query->where('event_log_transportable_id', $alias))` |
 | `active()` | `where status = 'active'` |
 | `inactive()` | `where status = 'inactive'` |
 | `disabled()` | `where status = 'disabled'` |
 
-The collecting listener chains these to find the subscriptions that should receive
+The collecting listener chains these to find the endpoints that should receive
 a given event.
 
 ## The Webhook object
@@ -106,13 +106,13 @@ delivery.
 | `payload` | `string` | The serialized CloudEvents JSON string. |
 | `timestamp` | `int` | Unix timestamp of when the request was built. |
 | `signature` | `string` | HMAC-SHA256 of `"{$timestamp}.{$payload}"`. |
-| `headers` | `array` | `Idempotency-Key`, `Source`, `Timestamp`, `Signature`, and custom subscription headers. |
+| `headers` | `array` | `Idempotency-Key`, `Source`, `Timestamp`, `Signature`, and custom endpoint headers. |
 
 The object is created with `Webhook::make($delivery)`. The constructor is private.
 
 ### `deliver()`
 
-`Webhook::deliver()` POSTs the payload to the subscription's URL with the
+`Webhook::deliver()` POSTs the payload to the endpoint's URL with the
 computed headers and a content type of `application/cloudevents+json`. It returns
 the `Illuminate\Http\Client\Response`.
 
@@ -134,7 +134,7 @@ serialization.
 }
 ```
 
-The `data` field holds the payload slice for the subscription's requested
+The `data` field holds the payload slice for the endpoint's requested
 version. If no version was requested, it holds the full `event_logs.data`
 snapshot.
 
@@ -146,7 +146,7 @@ Every request carries three headers:
 |---|---|
 | `Source` | `config('app.url')`. Lets the receiver route to the right handler before reading the body. |
 | `Timestamp` | Unix timestamp of when the request was built. |
-| `Signature` | HMAC-SHA256 of `"{$timestamp}.{$payload}"`, keyed by the subscription's `secret`. |
+| `Signature` | HMAC-SHA256 of `"{$timestamp}.{$payload}"`, keyed by the endpoint's `secret`. |
 
 The timestamp is part of the signed material. A receiver verifies by:
 
@@ -158,7 +158,7 @@ The timestamp is part of the signed material. A receiver verifies by:
 This prevents replay attacks. An attacker who captures a request cannot change
 the timestamp without breaking the signature.
 
-The secret is generated once and stored on the subscription. The package does not
+The secret is generated once and stored on the endpoint. The package does not
 rotate secrets — the consumer decides the rotation strategy.
 
 ## Idempotency
@@ -213,30 +213,30 @@ The package does **not** provide a collecting listener. The consumer writes one.
 
 The collecting listener receives a `NeedsEnvelopes` event, which holds the
 `Relay`. The relay holds the `Log`, which holds the event alias and the loggable
-model. The consumer queries subscriptions with their own scoping (by subscriber,
+model. The consumer queries endpoints with their own scoping (by subscriber,
 by tenant, by any criteria) and adds an `Envelope` for each.
 
-The package gives the consumer the tools to query: `Subscription::for($alias)->active()`.
+The package gives the consumer the tools to query: `Endpoint::for($alias)->active()`.
 The scoping beyond that is the consumer's domain.
 ## Auto-disable on repeated failure
 
-`Support\Webhooks\Subscriptions\Listeners\AutoDisable` listens for
+`Support\Webhooks\Endpoints\Listeners\AutoDisable` listens for
 event-log's delivery `Failed` after-event. When a delivery terminally fails (all
-tries exhausted), the listener counts consecutive failures for that subscription
+tries exhausted), the listener counts consecutive failures for that endpoint
 and disables it when the count reaches the configured threshold.
 
 The count is "consecutive" — it counts `Failed` deliveries whose `updated_at` is
-after the most recent `Succeeded` delivery for the same subscription. If there
+after the most recent `Succeeded` delivery for the same endpoint. If there
 has never been a successful delivery, all failures count.
 
-The threshold is `config('webhooks.subscriptions.failures.threshold')`, backed by
-`WEBHOOKS_SUBSCRIPTION_FAILURE_THRESHOLD` (default 10). Set it to 0 to turn off auto-disable
+The threshold is `config('webhooks.endpoints.failures.threshold')`, backed by
+`WEBHOOKS_ENDPOINT_FAILURE_THRESHOLD` (default 10). Set it to 0 to turn off auto-disable
 entirely.
 
 The listener skips:
 
-- Recipients that are not a `Subscription` (the `Failed` event fires for all
+- Recipients that are not an `Endpoint` (the `Failed` event fires for all
   transports, not just webhooks).
-- Subscriptions that are already `Inactive` or `Disabled`.
+- Endpoints that are already `Inactive` or `Disabled`.
 
 The package registers this listener automatically.

@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Envelopes\Envelope;
 use Support\Events\Log\Relays\Relay;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
 use Tests\TestCase;
 
@@ -29,12 +29,12 @@ final class NeedsEnvelopesTest extends TestCase
     public function it_collects_envelopes(): void
     {
         $relay = Relay::factory()->webhook()->createQuietly();
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create();
 
         $event = new NeedsEnvelopes($relay);
-        $event->add(Envelope::make(recipient: $subscription));
+        $event->add(Envelope::make(recipient: $endpoint));
 
         $this->assertCount(1, $event->envelopes);
-        $this->assertTrue($subscription->is($event->envelopes->first()->recipient));
+        $this->assertTrue($endpoint->is($event->envelopes->first()->recipient));
     }
 }

@@ -4,112 +4,132 @@ declare(strict_types=1);
 
 namespace Support\Webhooks\Subscriptions;
 
+use Illuminate\Database\UniqueConstraintViolationException;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Transportables\Transportable;
+use Support\Webhooks\Endpoints\Endpoint;
+use Support\Webhooks\Subscriptions\Listeners\Cleanup;
+use Support\Webhooks\Subscriptions\Listeners\Detach;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
-use Tests\Fixtures\Support\Webhooks\Subscriptions\Subscription as ExtendedSubscription;
+use Tests\Fixtures\Support\Webhooks\Endpoints\Endpoint as ExtendedEndpoint;
 use Tests\TestCase;
 
 #[CoversClass(Subscription::class)]
-#[CoversTrait(GeneratesSecret::class)]
+#[CoversClass(Cleanup::class)]
+#[CoversClass(Detach::class)]
 final class SubscriptionTest extends TestCase
 {
     #[Test]
-    public function it_auto_generates_a_secret_on_creation(): void
+    public function it_belongs_to_an_endpoint(): void
     {
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
+        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $this->assertNotNull($subscription->secret);
-        $this->assertSame(64, strlen($subscription->secret));
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+
+        $subscription = $endpoint->events->first()->subscription;
+
+        $this->assertTrue($endpoint->is($subscription->endpoint));
     }
 
     #[Test]
-    public function it_preserves_an_explicitly_set_secret(): void
+    public function it_belongs_to_an_event(): void
     {
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create(['secret' => 'explicit']);
+        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $this->assertSame('explicit', $subscription->secret);
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+
+        $subscription = $endpoint->events->first()->subscription;
+
+        $this->assertSame('order.placed', $subscription->event->id);
     }
 
     #[Test]
-    public function it_casts_headers_to_array(): void
+    public function an_endpoint_cannot_subscribe_to_the_same_event_twice(): void
     {
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create([
-            'headers' => ['X-Custom' => 'value'],
-        ]);
+        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $subscription->refresh();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
 
-        $this->assertSame(['X-Custom' => 'value'], $subscription->headers);
+        $this->expectException(UniqueConstraintViolationException::class);
+
+        $endpoint->events()->attach($transportable);
     }
 
     #[Test]
-    public function it_belongs_to_a_subscriber(): void
+    public function two_endpoints_can_subscribe_to_the_same_event(): void
     {
+        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
+
         $subscriber = Subscriber::factory()->create();
 
-        $subscription = Subscription::factory()->for($subscriber)->create();
+        Endpoint::factory()->for($subscriber)->hasAttached($transportable, [], 'events')->create();
+        Endpoint::factory()->for($subscriber)->hasAttached($transportable, [], 'events')->create();
 
-        $this->assertTrue($subscriber->is($subscription->subscriber));
+        $this->assertSame(2, Subscription::query()->where('event_log_transportable_id', 'order.placed')->count()); // @phpstan-ignore staticMethod.dynamicCall
     }
 
     #[Test]
-    public function it_uses_itself_by_default(): void
+    public function deleting_an_endpoint_deletes_its_subscriptions(): void
     {
-        $this->assertSame(Subscription::class, Subscription::using());
+        $placed = Transportable::factory()->create(['id' => 'order.placed']);
+        $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
+
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'events')->create();
+
+        $endpoint->delete();
+
+        $this->assertSame(0, Subscription::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
     }
 
     #[Test]
-    public function it_uses_the_model_given_to_use(): void
+    public function deleting_an_endpoint_leaves_other_endpoints_subscriptions_alone(): void
     {
-        Subscription::use(ExtendedSubscription::class);
+        $placed = Transportable::factory()->create(['id' => 'order.placed']);
+        $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
+
+        $subscriber = Subscriber::factory()->create();
+
+        $deleted = Endpoint::factory()->for($subscriber)->hasAttached($placed, [], 'events')->create();
+
+        $kept = Endpoint::factory()->for($subscriber)->hasAttached($cancelled, [], 'events')->create();
+
+        $deleted->delete();
+
+        $this->assertSame(1, $kept->events()->count()); // @phpstan-ignore staticMethod.dynamicCall
+    }
+
+    #[Test]
+    public function deleting_an_extended_endpoint_deletes_its_subscriptions(): void
+    {
+        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
+
+        Endpoint::use(ExtendedEndpoint::class);
 
         try {
-            $this->assertSame(ExtendedSubscription::class, Subscription::using());
-            $this->assertInstanceOf(ExtendedSubscription::class, Subscription::factory()->make());
+            $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+
+            $this->assertInstanceOf(ExtendedEndpoint::class, $endpoint);
+
+            $endpoint->delete();
+
+            $this->assertSame(0, Subscription::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
         } finally {
-            Subscription::use(Subscription::class);
+            Endpoint::use(Endpoint::class);
         }
     }
 
     #[Test]
-    public function it_has_topics(): void
+    public function deleting_a_transportable_detaches_its_subscriptions(): void
     {
-        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
+        $placed = Transportable::factory()->create(['id' => 'order.placed']);
+        $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
-        $subscription = Subscription::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+        Endpoint::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'events')->create();
 
-        $this->assertCount(1, $subscription->topics);
-        $this->assertSame('order.placed', $subscription->topics->first()->id);
-    }
+        $placed->delete();
 
-    #[Test]
-    public function it_sets_subscriber_via_fill(): void
-    {
-        $subscriber = Subscriber::factory()->create();
-
-        $subscription = new Subscription;
-        $subscription->fill(['subscriber' => $subscriber]);
-
-        $this->assertSame($subscriber->getMorphClass(), $subscription->subscriber_type);
-        $this->assertSame($subscriber->getKey(), $subscription->subscriber_id);
-    }
-
-    #[Test]
-    public function it_hides_the_secret(): void
-    {
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
-
-        $this->assertArrayNotHasKey('secret', $subscription->toArray());
-    }
-
-    #[Test]
-    public function it_defaults_to_active_status(): void
-    {
-        $subscription = Subscription::factory()->for(Subscriber::factory())->create();
-
-        $this->assertSame(Status\Status::Active, $subscription->status->enum);
+        $this->assertSame(1, Subscription::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
+        $this->assertSame('order.cancelled', Subscription::query()->sole()->event_log_transportable_id); // @phpstan-ignore staticMethod.dynamicCall
     }
 }

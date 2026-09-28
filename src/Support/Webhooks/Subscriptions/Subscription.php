@@ -8,35 +8,25 @@ use Illuminate\Database\Eloquent\Attributes\CollectedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Support\Events\Database\Eloquent\Swappable\Models\Concerns\SupportsSwapping;
 use Support\Events\Database\Eloquent\Swappable\Models\Contracts\Swappable;
 use Support\Events\Log\Transportables\Transportable;
+use Support\Webhooks\Endpoints\Endpoint;
 use Support\Webhooks\Subscriptions\Builder\Builder;
 use Support\Webhooks\Subscriptions\Collection\Subscriptions;
 use Support\Webhooks\Subscriptions\Factory\Factory;
-use Support\Webhooks\Subscriptions\Status\Status;
-use Support\Webhooks\Topics\Topic;
 
 /**
- * @property string $subscriber_type
- * @property string $subscriber_id
- * @property string $url
- * @property \Support\Events\Log\Logs\Data\Version\Contracts\Version|string|null $version
- * @property array<string, string>|null $headers
- * @property string $secret
- * @property \Support\Webhooks\Subscriptions\Status\Status $status
- *
- * @phpstan-property \Support\Database\Eloquent\StateMachines\StateMachine<\Support\Webhooks\Subscriptions\Status\Status> $status
+ * @property string $event_log_transportable_id
+ * @property string $webhook_endpoint_id
  */
 #[CollectedBy(Subscriptions::class)]
 #[UseEloquentBuilder(Builder::class)]
 #[UseFactory(Factory::class)]
-class Subscription extends Model implements Swappable
+class Subscription extends Pivot implements Swappable
 {
-    use GeneratesSecret;
     use HasUuids {
         getKeyType as private uuidKeyType;
         getIncrementing as private uuidIncrementing;
@@ -64,18 +54,7 @@ class Subscription extends Model implements Swappable
     }
 
     protected $fillable = [
-        'subscriber',
-        'url',
-        'version',
-        'headers',
-    ];
-
-    protected $hidden = [
-        'secret',
-    ];
-
-    protected $attributes = [
-        'status' => Status::Active,
+        'event_log_transportable_id',
     ];
 
     /**
@@ -95,34 +74,18 @@ class Subscription extends Model implements Swappable
     ];
 
     /**
-     * @var array<string, class-string|string>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\Support\Webhooks\Endpoints\Endpoint, $this>
      */
-    protected $casts = [
-        'headers' => 'array',
-        'status' => Status::class,
-    ];
-
-    public function setSubscriberAttribute(Model $subscriber): void
+    final public function endpoint(): BelongsTo
     {
-        $this->attributes['subscriber_type'] = $subscriber->getMorphClass();
-        $this->attributes['subscriber_id'] = $subscriber->getKey();
+        return $this->belongsTo(Endpoint::using(), 'webhook_endpoint_id');
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\Support\Events\Log\Transportables\Transportable, $this>
      */
-    final public function subscriber(): MorphTo
+    final public function event(): BelongsTo
     {
-        return $this->morphTo();
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\Support\Events\Log\Transportables\Transportable, $this, \Support\Webhooks\Topics\Topic>
-     */
-    final public function topics(): BelongsToMany
-    {
-        return $this->belongsToMany(Transportable::using(), 'webhook_subscription_topics', 'webhook_subscription_id', 'event_log_transportable_id')
-            ->using(Topic::using())
-            ->withTimestamps();
+        return $this->belongsTo(Transportable::using(), 'event_log_transportable_id');
     }
 }

@@ -6,20 +6,37 @@ namespace Support\Webhooks\Subscriptions\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Support\Events\Log\Deliveries\Status\Events\Failed;
-use Support\Webhooks\Subscriptions\Listeners\AutoDisable;
+use Support\Events\Log\Transportables\Events\Deleting as TransportableDeleting;
+use Support\Events\Log\Transportables\Transportable;
+use Support\Webhooks\Endpoints\Endpoint;
+use Support\Webhooks\Endpoints\Events\Deleting as EndpointDeleting;
+use Support\Webhooks\Subscriptions\Listeners\Cleanup;
+use Support\Webhooks\Subscriptions\Listeners\Detach;
+use Support\Webhooks\Subscriptions\Subscription;
 
 class Provider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->bootRelationships();
         $this->bootListeners();
         $this->bootMigrations();
     }
 
+    private function bootRelationships(): void
+    {
+        Transportable::resolveRelationUsing('webhookEndpoints', function (Transportable $transportable) {
+            return $transportable->belongsToMany(Endpoint::using(), 'webhook_subscriptions', 'event_log_transportable_id', 'webhook_endpoint_id')
+                ->using(Subscription::using())
+                ->as('subscription')
+                ->withTimestamps();
+        });
+    }
+
     private function bootListeners(): void
     {
-        Event::listen(Failed::class, AutoDisable::class);
+        Event::listen(EndpointDeleting::class, Cleanup::class);
+        Event::listen(TransportableDeleting::class, Detach::class);
     }
 
     private function bootMigrations(): void

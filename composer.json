@@ -67,8 +67,8 @@
         "laravel": {
             "providers": [
                 "Support\\Webhooks\\Providers\\Provider",
-                "Support\\Webhooks\\Subscriptions\\Providers\\Provider",
-                "Support\\Webhooks\\Topics\\Providers\\Provider"
+                "Support\\Webhooks\\Endpoints\\Providers\\Provider",
+                "Support\\Webhooks\\Subscriptions\\Providers\\Provider"
             ]
         },
         "tooling": {

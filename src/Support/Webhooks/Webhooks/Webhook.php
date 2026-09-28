@@ -9,7 +9,7 @@ use CloudEvents\Serializers\JsonSerializer;
 use CloudEvents\V1\CloudEventImmutable;
 use Illuminate\Support\Facades\Http;
 use Support\Events\Log\Deliveries\Delivery;
-use Support\Webhooks\Subscriptions\Subscription;
+use Support\Webhooks\Endpoints\Endpoint;
 
 class Webhook
 {
@@ -43,13 +43,13 @@ class Webhook
     }
 
     public private(set) string $signature {
-        get => $this->signature ??= hash_hmac('sha256', "{$this->timestamp}.{$this->payload}", $this->subscription->secret);
+        get => $this->signature ??= hash_hmac('sha256', "{$this->timestamp}.{$this->payload}", $this->endpoint->secret);
     }
 
     /** @var array<string, string|int> */
     public private(set) array $headers {
         get => $this->headers ??= [
-            ...$this->subscription->headers ?? [],
+            ...$this->endpoint->headers ?? [],
             'Idempotency-Key' => $this->id,
             'Source' => $this->source,
             'Timestamp' => $this->timestamp,
@@ -57,8 +57,8 @@ class Webhook
         ];
     }
 
-    private Subscription $subscription {
-        get => $this->subscription ??= $this->delivery->recipient; // @phpstan-ignore assign.propertyType, return.type
+    private Endpoint $endpoint {
+        get => $this->endpoint ??= $this->delivery->recipient; // @phpstan-ignore assign.propertyType, return.type
     }
 
     private CloudEventImmutable $cloudEvent {
@@ -90,6 +90,6 @@ class Webhook
             ->timeout((int) config('webhooks.timeouts.request'))
             ->withHeaders($this->headers)
             ->withBody($this->payload, 'application/cloudevents+json')
-            ->post($this->subscription->url);
+            ->post($this->endpoint->url);
     }
 }

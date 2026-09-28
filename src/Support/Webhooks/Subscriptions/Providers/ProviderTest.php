@@ -7,17 +7,26 @@ namespace Support\Webhooks\Subscriptions\Providers;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use Support\Events\Log\Deliveries\Status\Events\Failed;
-use Support\Webhooks\Subscriptions\Listeners\AutoDisable;
+use Support\Events\Log\Transportables\Events\Deleting as TransportableDeleting;
+use Support\Webhooks\Endpoints\Events\Deleting as EndpointDeleting;
+use Support\Webhooks\Subscriptions\Listeners\Cleanup;
+use Support\Webhooks\Subscriptions\Listeners\Detach;
 use Tests\TestCase;
 
 #[CoversClass(Provider::class)]
 final class ProviderTest extends TestCase
 {
     #[Test]
-    public function it_registers_the_auto_disable_listener(): void
+    public function it_registers_the_cleanup_listener(): void
     {
         Event::fake();
-        Event::assertListening(Failed::class, AutoDisable::class);
+        Event::assertListening(EndpointDeleting::class, Cleanup::class);
+    }
+
+    #[Test]
+    public function it_registers_the_detach_listener(): void
+    {
+        Event::fake();
+        Event::assertListening(TransportableDeleting::class, Detach::class);
     }
 }
