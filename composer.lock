@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ad1afb96b1d26818e3df81d556b3a64d",
+    "content-hash": "61b34ad0445b09f829b0713e0964cfe1",
     "packages": [
         {
             "name": "aryeo/actions",
@@ -228,16 +228,16 @@
         },
         {
             "name": "aryeo/event-log",
-            "version": "0.0.5",
+            "version": "0.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AryeoHQ/event-log.git",
-                "reference": "8ece34b1570177b5f7d671d005b9ce9dba8763c1"
+                "reference": "3c5748ea7fa91367691a6985ce618cb7059c4f01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/event-log/zipball/8ece34b1570177b5f7d671d005b9ce9dba8763c1",
-                "reference": "8ece34b1570177b5f7d671d005b9ce9dba8763c1",
+                "url": "https://api.github.com/repos/AryeoHQ/event-log/zipball/3c5748ea7fa91367691a6985ce618cb7059c4f01",
+                "reference": "3c5748ea7fa91367691a6985ce618cb7059c4f01",
                 "shasum": ""
             },
             "require": {
@@ -312,9 +312,9 @@
                 }
             ],
             "support": {
-                "source": "https://github.com/AryeoHQ/event-log/tree/0.0.5"
+                "source": "https://github.com/AryeoHQ/event-log/tree/0.0.6"
             },
-            "time": "2026-09-28T13:57:41+00:00"
+            "time": "2026-09-28T19:06:19+00:00"
         },
         {
             "name": "aryeo/tooling-laravel",
