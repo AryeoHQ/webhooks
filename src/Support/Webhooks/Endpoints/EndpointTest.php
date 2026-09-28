@@ -75,14 +75,14 @@ final class EndpointTest extends TestCase
     }
 
     #[Test]
-    public function it_has_topics(): void
+    public function it_has_events(): void
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'topics')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
 
-        $this->assertCount(1, $endpoint->topics);
-        $this->assertSame('order.placed', $endpoint->topics->first()->id);
+        $this->assertCount(1, $endpoint->events);
+        $this->assertSame('order.placed', $endpoint->events->first()->id);
     }
 
     #[Test]

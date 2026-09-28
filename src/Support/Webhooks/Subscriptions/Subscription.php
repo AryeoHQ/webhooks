@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Webhooks\Topics;
+namespace Support\Webhooks\Subscriptions;
 
 use Illuminate\Database\Eloquent\Attributes\CollectedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -14,18 +14,18 @@ use Support\Events\Database\Eloquent\Swappable\Models\Concerns\SupportsSwapping;
 use Support\Events\Database\Eloquent\Swappable\Models\Contracts\Swappable;
 use Support\Events\Log\Transportables\Transportable;
 use Support\Webhooks\Endpoints\Endpoint;
-use Support\Webhooks\Topics\Builder\Builder;
-use Support\Webhooks\Topics\Collection\Topics;
-use Support\Webhooks\Topics\Factory\Factory;
+use Support\Webhooks\Subscriptions\Builder\Builder;
+use Support\Webhooks\Subscriptions\Collection\Subscriptions;
+use Support\Webhooks\Subscriptions\Factory\Factory;
 
 /**
  * @property string $event_log_transportable_id
  * @property string $webhook_endpoint_id
  */
-#[CollectedBy(Topics::class)]
+#[CollectedBy(Subscriptions::class)]
 #[UseEloquentBuilder(Builder::class)]
 #[UseFactory(Factory::class)]
-class Topic extends Pivot implements Swappable
+class Subscription extends Pivot implements Swappable
 {
     use HasUuids {
         getKeyType as private uuidKeyType;
@@ -37,7 +37,7 @@ class Topic extends Pivot implements Swappable
 
     final public $incrementing = false;
 
-    final protected $table = 'webhook_endpoint_topics';
+    final protected $table = 'webhook_subscriptions';
 
     final protected $primaryKey = 'id';
 
@@ -84,7 +84,7 @@ class Topic extends Pivot implements Swappable
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\Support\Events\Log\Transportables\Transportable, $this>
      */
-    final public function transportable(): BelongsTo
+    final public function event(): BelongsTo
     {
         return $this->belongsTo(Transportable::using(), 'event_log_transportable_id');
     }

@@ -15,16 +15,16 @@ use Tests\TestCase;
 final class BuilderTest extends TestCase
 {
     #[Test]
-    public function for_scopes_by_topic_alias(): void
+    public function for_scopes_by_event_alias(): void
     {
         $orderPlaced = Transportable::factory()->create(['id' => 'order.placed']);
         $orderCancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
         $subscriber = Subscriber::factory()->create();
 
-        $placed = Endpoint::factory()->for($subscriber)->hasAttached($orderPlaced, [], 'topics')->create();
+        $placed = Endpoint::factory()->for($subscriber)->hasAttached($orderPlaced, [], 'events')->create();
 
-        Endpoint::factory()->for($subscriber)->hasAttached($orderCancelled, [], 'topics')->create();
+        Endpoint::factory()->for($subscriber)->hasAttached($orderCancelled, [], 'events')->create();
 
         $results = Endpoint::for('order.placed')->get();
 
@@ -33,14 +33,14 @@ final class BuilderTest extends TestCase
     }
 
     #[Test]
-    public function for_includes_endpoint_subscribed_to_multiple_topics(): void
+    public function for_includes_endpoint_subscribed_to_multiple_events(): void
     {
         $orderPlaced = Transportable::factory()->create(['id' => 'order.placed']);
         $orderCancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
         $subscriber = Subscriber::factory()->create();
 
-        $endpoint = Endpoint::factory()->for($subscriber)->hasAttached([$orderPlaced, $orderCancelled], [], 'topics')->create();
+        $endpoint = Endpoint::factory()->for($subscriber)->hasAttached([$orderPlaced, $orderCancelled], [], 'events')->create();
 
         $this->assertTrue($endpoint->is(Endpoint::for('order.placed')->sole()));
         $this->assertTrue($endpoint->is(Endpoint::for('order.cancelled')->sole()));

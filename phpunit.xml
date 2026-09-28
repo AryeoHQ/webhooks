@@ -16,9 +16,9 @@
             <directory suffix="Test.php">./src</directory>
             <directory suffix="TestCases.php">./src</directory>
             <file>./src/Support/Webhooks/Endpoints/Factory/Factory.php</file>
-            <file>./src/Support/Webhooks/Topics/Factory/Factory.php</file>
+            <file>./src/Support/Webhooks/Subscriptions/Factory/Factory.php</file>
             <directory>./src/Support/Webhooks/Endpoints/Migrations</directory>
-            <directory>./src/Support/Webhooks/Topics/Migrations</directory>
+            <directory>./src/Support/Webhooks/Subscriptions/Migrations</directory>
         </exclude>
     </source>
     <php>

@@ -148,14 +148,14 @@ $endpoint->fill([
 ]);
 $endpoint->save();
 
-$endpoint->topics()->attach(['article.updating', 'article.deleting']);
+$endpoint->events()->attach(['article.updating', 'article.deleting']);
 ```
 
 The `secret` is generated automatically. Return it once to the subscriber so
 they can verify signatures. You build the API or UI for managing endpoints.
 
 An endpoint cannot subscribe to the same event twice — the pivot enforces a
-unique constraint. Deleting an endpoint detaches its topics via a listener.
+unique constraint. Deleting an endpoint detaches its subscriptions via a listener.
 
 That is everything you need. Events that implement `Webhook` are now delivered
 as signed CloudEvents to every matching active endpoint.
@@ -262,7 +262,7 @@ the counter.
 | `secret` | string | HMAC signing secret, auto-generated. |
 | `status` | string | `active`, `inactive`, or `disabled`. |
 
-Topics live in `webhook_endpoint_topics`, one row per subscribed topic:
+Subscriptions live in `webhook_subscriptions`, one row per subscribed event:
 
 | Column | Type | Description |
 |---|---|---|
@@ -273,7 +273,7 @@ Topics live in `webhook_endpoint_topics`, one row per subscribed topic:
 ### Builder scopes
 
 ```php
-Endpoint::for('article.updating')        // has a topic with this alias
+Endpoint::for('article.updating')        // subscribed to this alias
 Endpoint::active()                      // where status = active
 Endpoint::inactive()                    // where status = inactive
 Endpoint::disabled()                    // where status = disabled
@@ -302,7 +302,7 @@ Everything above works without customization. This section is optional.
 
 ### Extend the model
 
-Both `Endpoint` and `Topic` implement `Swappable`. To add casts,
+Both `Endpoint` and `Subscription` implement `Swappable`. To add casts,
 relationships, or other behavior, create a subclass and register it in a service
 provider.
 

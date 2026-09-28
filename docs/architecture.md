@@ -36,10 +36,10 @@ the `recipient`.
 | `secret` | string | HMAC-SHA256 signing key. Auto-generated on creation. Not mass-assignable. |
 | `status` | string | The endpoint's status: `active`, `inactive`, or `disabled`. See [state-machines.md](state-machines.md). |
 
-### Table: `webhook_endpoint_topics`
+### Table: `webhook_subscriptions`
 
-One row per topic an endpoint listens to. An endpoint has one URL, one
-secret, and one version, but many topics.
+One row per event an endpoint listens to. An endpoint has one URL, one
+secret, and one version, but many subscriptions.
 
 | Column | Type | Description |
 |---|---|---|
@@ -82,7 +82,7 @@ four scopes:
 
 | Scope | SQL |
 |---|---|
-| `for($alias)` | `whereHas('topics', fn ($query) => $query->where('event_log_transportable_id', $alias))` |
+| `for($alias)` | `whereHas('events', fn ($query) => $query->where('event_log_transportable_id', $alias))` |
 | `active()` | `where status = 'active'` |
 | `inactive()` | `where status = 'inactive'` |
 | `disabled()` | `where status = 'disabled'` |

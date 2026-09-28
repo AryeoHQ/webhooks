@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Support\Webhooks\Topics\Providers;
+namespace Support\Webhooks\Subscriptions\Providers;
 
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Transportables\Events\Deleting as TransportableDeleting;
 use Support\Webhooks\Endpoints\Events\Deleting as EndpointDeleting;
-use Support\Webhooks\Topics\Listeners\Cleanup;
-use Support\Webhooks\Topics\Listeners\Detach;
+use Support\Webhooks\Subscriptions\Listeners\Cleanup;
+use Support\Webhooks\Subscriptions\Listeners\Detach;
 use Tests\TestCase;
 
 #[CoversClass(Provider::class)]

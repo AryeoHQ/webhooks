@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Webhooks\Topics\Migrations;
+namespace Support\Webhooks\Subscriptions\Migrations;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -12,7 +12,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('webhook_endpoint_topics', function (Blueprint $table): void {
+        Schema::create('webhook_subscriptions', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('webhook_endpoint_id')->constrained('webhook_endpoints');
             $table->string('event_log_transportable_id');

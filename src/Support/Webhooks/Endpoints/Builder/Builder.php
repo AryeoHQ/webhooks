@@ -14,7 +14,7 @@ class Builder extends \Illuminate\Database\Eloquent\Builder
     final public function for(string $alias): self
     {
         return $this->whereHas(
-            'topics', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('event_log_transportable_id', $alias)
+            'events', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('event_log_transportable_id', $alias)
         );
     }
 

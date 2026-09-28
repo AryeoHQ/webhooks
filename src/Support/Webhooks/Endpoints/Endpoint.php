@@ -18,7 +18,7 @@ use Support\Webhooks\Endpoints\Builder\Builder;
 use Support\Webhooks\Endpoints\Collection\Endpoints;
 use Support\Webhooks\Endpoints\Factory\Factory;
 use Support\Webhooks\Endpoints\Status\Status;
-use Support\Webhooks\Topics\Topic;
+use Support\Webhooks\Subscriptions\Subscription;
 
 /**
  * @property string $subscriber_type
@@ -117,12 +117,13 @@ class Endpoint extends Model implements Swappable
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\Support\Events\Log\Transportables\Transportable, $this, \Support\Webhooks\Topics\Topic>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\Support\Events\Log\Transportables\Transportable, $this, \Support\Webhooks\Subscriptions\Subscription, 'subscription'>
      */
-    final public function topics(): BelongsToMany
+    final public function events(): BelongsToMany
     {
-        return $this->belongsToMany(Transportable::using(), 'webhook_endpoint_topics', 'webhook_endpoint_id', 'event_log_transportable_id')
-            ->using(Topic::using())
+        return $this->belongsToMany(Transportable::using(), 'webhook_subscriptions', 'webhook_endpoint_id', 'event_log_transportable_id')
+            ->using(Subscription::using())
+            ->as('subscription')
             ->withTimestamps();
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Webhooks\Topics\Providers;
+namespace Support\Webhooks\Subscriptions\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -10,9 +10,9 @@ use Support\Events\Log\Transportables\Events\Deleting as TransportableDeleting;
 use Support\Events\Log\Transportables\Transportable;
 use Support\Webhooks\Endpoints\Endpoint;
 use Support\Webhooks\Endpoints\Events\Deleting as EndpointDeleting;
-use Support\Webhooks\Topics\Listeners\Cleanup;
-use Support\Webhooks\Topics\Listeners\Detach;
-use Support\Webhooks\Topics\Topic;
+use Support\Webhooks\Subscriptions\Listeners\Cleanup;
+use Support\Webhooks\Subscriptions\Listeners\Detach;
+use Support\Webhooks\Subscriptions\Subscription;
 
 class Provider extends ServiceProvider
 {
@@ -26,8 +26,9 @@ class Provider extends ServiceProvider
     private function bootRelationships(): void
     {
         Transportable::resolveRelationUsing('webhookEndpoints', function (Transportable $transportable) {
-            return $transportable->belongsToMany(Endpoint::using(), 'webhook_endpoint_topics', 'event_log_transportable_id', 'webhook_endpoint_id')
-                ->using(Topic::using())
+            return $transportable->belongsToMany(Endpoint::using(), 'webhook_subscriptions', 'event_log_transportable_id', 'webhook_endpoint_id')
+                ->using(Subscription::using())
+                ->as('subscription')
                 ->withTimestamps();
         });
     }

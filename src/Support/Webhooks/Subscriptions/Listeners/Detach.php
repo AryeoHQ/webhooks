@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Webhooks\Topics\Listeners;
+namespace Support\Webhooks\Subscriptions\Listeners;
 
 use Support\Events\Log\Transportables\Events\Deleting;
 
