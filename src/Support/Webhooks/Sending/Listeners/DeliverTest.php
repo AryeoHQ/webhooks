@@ -75,7 +75,7 @@ final class DeliverTest extends TestCase
     {
         Http::fake(['*' => Http::response('ok')]);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create([
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create([
             'headers' => ['X-Custom' => 'value'],
         ]);
 

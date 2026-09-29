@@ -102,8 +102,8 @@ final class GatherWebhookEnvelopes
     public function handle(NeedsEnvelopes $event): void
     {
         Endpoint::for($event->relay->log->type)->active()
-            ->where('subscriber_type', Organization::class)
-            ->where('subscriber_id', $event->relay->log->loggable->organization_id)
+            ->where('principal_type', Organization::class)
+            ->where('principal_id', $event->relay->log->loggable->organization_id)
             ->each(fn (Endpoint $endpoint) => $event->add(
                 Envelope::make(
                     recipient: $endpoint,
@@ -140,13 +140,11 @@ subscribes to one or more events.
 ```php
 use Support\Webhooks\Endpoints\Endpoint;
 
-$endpoint = new Endpoint;
-$endpoint->fill([
-    'subscriber' => $organization,
+$endpoint = Endpoint::create([
+    'principal' => $organization,
     'url' => 'https://example.com/webhooks',
     'version' => ApiVersion::V1->value,
 ]);
-$endpoint->save();
 
 $endpoint->events()->attach(['article.updating', 'article.deleting']);
 ```
@@ -254,8 +252,8 @@ the counter.
 | Column | Type | Description |
 |---|---|---|
 | `id` | uuid | Primary key. |
-| `subscriber_type` | string | Polymorphic owner type. |
-| `subscriber_id` | uuid | Polymorphic owner id. |
+| `principal_type` | string | Polymorphic owner type. |
+| `principal_id` | uuid | Polymorphic owner id. |
 | `url` | string | The delivery URL. |
 | `version` | string, nullable | Which payload version to send. `null` sends the full payload. |
 | `headers` | json, nullable | Custom headers to include with every delivery. |

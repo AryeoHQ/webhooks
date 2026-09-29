@@ -23,7 +23,7 @@ final class AutoDisableTest extends TestCase
     {
         config(['webhooks.endpoints.failures.threshold' => 3]);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->active()->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->active()->create();
 
         $this->createFailedDeliveries($endpoint, 3);
 
@@ -39,7 +39,7 @@ final class AutoDisableTest extends TestCase
     {
         config(['webhooks.endpoints.failures.threshold' => 3]);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->active()->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->active()->create();
 
         $this->createFailedDeliveries($endpoint, 2);
 
@@ -55,7 +55,7 @@ final class AutoDisableTest extends TestCase
     {
         config(['webhooks.endpoints.failures.threshold' => 3]);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->active()->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->active()->create();
 
         $this->createFailedDeliveries($endpoint, 2);
 
@@ -78,7 +78,7 @@ final class AutoDisableTest extends TestCase
     {
         config(['webhooks.endpoints.failures.threshold' => 0]);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->active()->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->active()->create();
 
         $this->createFailedDeliveries($endpoint, 20);
 
@@ -106,7 +106,7 @@ final class AutoDisableTest extends TestCase
     {
         config(['webhooks.endpoints.failures.threshold' => 1]);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->inactive()->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->inactive()->create();
 
         $this->createFailedDeliveries($endpoint, 5);
 

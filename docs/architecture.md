@@ -28,8 +28,8 @@ the `recipient`.
 | Column | Type | Description |
 |---|---|---|
 | `id` | uuid | Primary key. |
-| `subscriber_type` | string | Polymorphic owner type (e.g. `Organization`). |
-| `subscriber_id` | uuid | Polymorphic owner id. |
+| `principal_type` | string | Polymorphic owner type (e.g. `Organization`). |
+| `principal_id` | uuid | Polymorphic owner id. |
 | `url` | string | The URL the webhook is POSTed to. Read at send time, not at creation time — if the URL changes, the next delivery uses the new value. |
 | `version` | string, nullable | Which payload version the subscriber wants. Passed through to `Envelope::make()`. `null` means the full payload. |
 | `headers` | json, nullable | Custom HTTP headers merged into every delivery. |
@@ -62,18 +62,18 @@ The secret is not mass-assignable. The consumer decides how and when to expose i
 (for example, returning it once in the API response that creates the
 endpoint).
 
-### The subscriber relationship
+### The principal relationship
 
-The `subscriber` is a `MorphTo` relationship. Set it via `fill()` or direct
-assignment — both go through the `setSubscriberAttribute` mutator:
+The `principal` is a `MorphTo` relationship. Set it via `fill()` or direct
+assignment — both go through the `setPrincipalAttribute` mutator:
 
 ```php
-$endpoint->fill(['subscriber' => $organization]);
+$endpoint->fill(['principal' => $organization]);
 // or
-$endpoint->subscriber = $organization;
+$endpoint->principal = $organization;
 ```
 
-This sets `subscriber_type` and `subscriber_id` from the model.
+This sets `principal_type` and `principal_id` from the model.
 
 ### Builder scopes
 
