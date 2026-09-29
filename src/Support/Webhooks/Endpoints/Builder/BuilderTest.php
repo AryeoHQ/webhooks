@@ -22,9 +22,9 @@ final class BuilderTest extends TestCase
 
         $subscriber = Subscriber::factory()->create();
 
-        $placed = Endpoint::factory()->for($subscriber)->hasAttached($orderPlaced, [], 'events')->create();
+        $placed = Endpoint::factory()->for($subscriber, 'principal')->hasAttached($orderPlaced, [], 'events')->create();
 
-        Endpoint::factory()->for($subscriber)->hasAttached($orderCancelled, [], 'events')->create();
+        Endpoint::factory()->for($subscriber, 'principal')->hasAttached($orderCancelled, [], 'events')->create();
 
         $results = Endpoint::for('order.placed')->get();
 
@@ -40,7 +40,7 @@ final class BuilderTest extends TestCase
 
         $subscriber = Subscriber::factory()->create();
 
-        $endpoint = Endpoint::factory()->for($subscriber)->hasAttached([$orderPlaced, $orderCancelled], [], 'events')->create();
+        $endpoint = Endpoint::factory()->for($subscriber, 'principal')->hasAttached([$orderPlaced, $orderCancelled], [], 'events')->create();
 
         $this->assertTrue($endpoint->is(Endpoint::for('order.placed')->sole()));
         $this->assertTrue($endpoint->is(Endpoint::for('order.cancelled')->sole()));
@@ -51,8 +51,8 @@ final class BuilderTest extends TestCase
     {
         $subscriber = Subscriber::factory()->create();
 
-        Endpoint::factory()->for($subscriber)->active()->create();
-        Endpoint::factory()->for($subscriber)->inactive()->create();
+        Endpoint::factory()->for($subscriber, 'principal')->active()->create();
+        Endpoint::factory()->for($subscriber, 'principal')->inactive()->create();
 
         $results = Endpoint::active()->get();
 
@@ -64,8 +64,8 @@ final class BuilderTest extends TestCase
     {
         $subscriber = Subscriber::factory()->create();
 
-        Endpoint::factory()->for($subscriber)->active()->create();
-        Endpoint::factory()->for($subscriber)->inactive()->create();
+        Endpoint::factory()->for($subscriber, 'principal')->active()->create();
+        Endpoint::factory()->for($subscriber, 'principal')->inactive()->create();
 
         $results = Endpoint::inactive()->get();
 
@@ -77,8 +77,8 @@ final class BuilderTest extends TestCase
     {
         $subscriber = Subscriber::factory()->create();
 
-        Endpoint::factory()->for($subscriber)->active()->create();
-        Endpoint::factory()->for($subscriber)->disabled()->create();
+        Endpoint::factory()->for($subscriber, 'principal')->active()->create();
+        Endpoint::factory()->for($subscriber, 'principal')->disabled()->create();
 
         $results = Endpoint::disabled()->get();
 

@@ -81,7 +81,7 @@ final class WebhookTest extends TestCase
     #[Test]
     public function it_includes_custom_endpoint_headers(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create([
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create([
             'headers' => ['X-Custom' => 'value'],
         ]);
 

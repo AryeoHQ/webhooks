@@ -16,8 +16,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
 
             // Declared manually (over uuidMorphs) in favor of the wider composite defined below
-            $table->string('subscriber_type');
-            $table->uuid('subscriber_id');
+            $table->string('principal_type');
+            $table->uuid('principal_id');
 
             $table->text('url');
             $table->string('version')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('status');
             $table->timestampsTz();
 
-            $table->index(['subscriber_type', 'subscriber_id', 'status'], 'webhook_endpoints_lookup_index'); // Handles the collecting listener use case
+            $table->index(['principal_type', 'principal_id', 'status'], 'webhook_endpoints_lookup_index'); // Handles the collecting listener use case
         });
     }
 };

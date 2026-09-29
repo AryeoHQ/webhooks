@@ -32,7 +32,7 @@ final class Webhook
                     ->for(Relay::factory()->webhook($transport), 'relay')
                     ->state(fn (): array => [
                         'envelope' => Envelope::make(
-                            recipient: Endpoint::factory()->for(Subscriber::factory())->create(),
+                            recipient: Endpoint::factory()->for(Subscriber::factory(), 'principal')->create(),
                         ),
                     ]),
                 DeliveryAttempt::class => $this

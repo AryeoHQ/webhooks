@@ -25,7 +25,7 @@ final class SubscriptionTest extends TestCase
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached($transportable, [], 'events')->create();
 
         $subscription = $endpoint->events->first()->subscription;
 
@@ -37,7 +37,7 @@ final class SubscriptionTest extends TestCase
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached($transportable, [], 'events')->create();
 
         $subscription = $endpoint->events->first()->subscription;
 
@@ -49,7 +49,7 @@ final class SubscriptionTest extends TestCase
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached($transportable, [], 'events')->create();
 
         $this->expectException(UniqueConstraintViolationException::class);
 
@@ -63,8 +63,8 @@ final class SubscriptionTest extends TestCase
 
         $subscriber = Subscriber::factory()->create();
 
-        Endpoint::factory()->for($subscriber)->hasAttached($transportable, [], 'events')->create();
-        Endpoint::factory()->for($subscriber)->hasAttached($transportable, [], 'events')->create();
+        Endpoint::factory()->for($subscriber, 'principal')->hasAttached($transportable, [], 'events')->create();
+        Endpoint::factory()->for($subscriber, 'principal')->hasAttached($transportable, [], 'events')->create();
 
         $this->assertSame(2, Subscription::query()->where('event_log_transportable_id', 'order.placed')->count()); // @phpstan-ignore staticMethod.dynamicCall
     }
@@ -75,7 +75,7 @@ final class SubscriptionTest extends TestCase
         $placed = Transportable::factory()->create(['id' => 'order.placed']);
         $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'events')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached([$placed, $cancelled], [], 'events')->create();
 
         $endpoint->delete();
 
@@ -90,9 +90,9 @@ final class SubscriptionTest extends TestCase
 
         $subscriber = Subscriber::factory()->create();
 
-        $deleted = Endpoint::factory()->for($subscriber)->hasAttached($placed, [], 'events')->create();
+        $deleted = Endpoint::factory()->for($subscriber, 'principal')->hasAttached($placed, [], 'events')->create();
 
-        $kept = Endpoint::factory()->for($subscriber)->hasAttached($cancelled, [], 'events')->create();
+        $kept = Endpoint::factory()->for($subscriber, 'principal')->hasAttached($cancelled, [], 'events')->create();
 
         $deleted->delete();
 
@@ -107,7 +107,7 @@ final class SubscriptionTest extends TestCase
         Endpoint::use(ExtendedEndpoint::class);
 
         try {
-            $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+            $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached($transportable, [], 'events')->create();
 
             $this->assertInstanceOf(ExtendedEndpoint::class, $endpoint);
 
@@ -125,7 +125,7 @@ final class SubscriptionTest extends TestCase
         $placed = Transportable::factory()->create(['id' => 'order.placed']);
         $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
 
-        Endpoint::factory()->for(Subscriber::factory())->hasAttached([$placed, $cancelled], [], 'events')->create();
+        Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached([$placed, $cancelled], [], 'events')->create();
 
         $placed->delete();
 

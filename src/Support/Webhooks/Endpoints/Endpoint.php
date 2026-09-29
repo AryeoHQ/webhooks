@@ -21,8 +21,8 @@ use Support\Webhooks\Endpoints\Status\Status;
 use Support\Webhooks\Subscriptions\Subscription;
 
 /**
- * @property string $subscriber_type
- * @property string $subscriber_id
+ * @property string $principal_type
+ * @property string $principal_id
  * @property string $url
  * @property \Support\Events\Log\Logs\Data\Version\Contracts\Version|string|null $version
  * @property array<string, string>|null $headers
@@ -64,7 +64,7 @@ class Endpoint extends Model implements Swappable
     }
 
     protected $fillable = [
-        'subscriber',
+        'principal',
         'url',
         'version',
         'headers',
@@ -102,16 +102,16 @@ class Endpoint extends Model implements Swappable
         'status' => Status::class,
     ];
 
-    public function setSubscriberAttribute(Model $subscriber): void
+    public function setPrincipalAttribute(Model $principal): void
     {
-        $this->attributes['subscriber_type'] = $subscriber->getMorphClass();
-        $this->attributes['subscriber_id'] = $subscriber->getKey();
+        $this->attributes['principal_type'] = $principal->getMorphClass();
+        $this->attributes['principal_id'] = $principal->getKey();
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this>
      */
-    final public function subscriber(): MorphTo
+    final public function principal(): MorphTo
     {
         return $this->morphTo();
     }

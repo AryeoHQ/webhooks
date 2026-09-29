@@ -19,7 +19,7 @@ final class EndpointTest extends TestCase
     #[Test]
     public function it_auto_generates_a_secret_on_creation(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create();
 
         $this->assertNotNull($endpoint->secret);
         $this->assertSame(64, strlen($endpoint->secret));
@@ -28,7 +28,7 @@ final class EndpointTest extends TestCase
     #[Test]
     public function it_preserves_an_explicitly_set_secret(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create(['secret' => 'explicit']);
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create(['secret' => 'explicit']);
 
         $this->assertSame('explicit', $endpoint->secret);
     }
@@ -36,7 +36,7 @@ final class EndpointTest extends TestCase
     #[Test]
     public function it_casts_headers_to_array(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create([
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create([
             'headers' => ['X-Custom' => 'value'],
         ]);
 
@@ -46,13 +46,13 @@ final class EndpointTest extends TestCase
     }
 
     #[Test]
-    public function it_belongs_to_a_subscriber(): void
+    public function it_belongs_to_a_principal(): void
     {
         $subscriber = Subscriber::factory()->create();
 
-        $endpoint = Endpoint::factory()->for($subscriber)->create();
+        $endpoint = Endpoint::factory()->for($subscriber, 'principal')->create();
 
-        $this->assertTrue($subscriber->is($endpoint->subscriber));
+        $this->assertTrue($subscriber->is($endpoint->principal));
     }
 
     #[Test]
@@ -79,28 +79,28 @@ final class EndpointTest extends TestCase
     {
         $transportable = Transportable::factory()->create(['id' => 'order.placed']);
 
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->hasAttached($transportable, [], 'events')->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached($transportable, [], 'events')->create();
 
         $this->assertCount(1, $endpoint->events);
         $this->assertSame('order.placed', $endpoint->events->first()->id);
     }
 
     #[Test]
-    public function it_sets_subscriber_via_fill(): void
+    public function it_sets_principal_via_fill(): void
     {
         $subscriber = Subscriber::factory()->create();
 
         $endpoint = new Endpoint;
-        $endpoint->fill(['subscriber' => $subscriber]);
+        $endpoint->fill(['principal' => $subscriber]);
 
-        $this->assertSame($subscriber->getMorphClass(), $endpoint->subscriber_type);
-        $this->assertSame($subscriber->getKey(), $endpoint->subscriber_id);
+        $this->assertSame($subscriber->getMorphClass(), $endpoint->principal_type);
+        $this->assertSame($subscriber->getKey(), $endpoint->principal_id);
     }
 
     #[Test]
     public function it_hides_the_secret(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create();
 
         $this->assertArrayNotHasKey('secret', $endpoint->toArray());
     }
@@ -108,7 +108,7 @@ final class EndpointTest extends TestCase
     #[Test]
     public function it_defaults_to_active_status(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory())->create();
+        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create();
 
         $this->assertSame(Status\Status::Active, $endpoint->status->enum);
     }
