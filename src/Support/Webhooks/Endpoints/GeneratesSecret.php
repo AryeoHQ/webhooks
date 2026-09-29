@@ -8,8 +8,8 @@ use Illuminate\Support\Str;
 
 trait GeneratesSecret
 {
-    public static function bootGeneratesSecret(): void
+    public function initializeGeneratesSecret(): void
     {
-        static::creating(fn (self $model) => $model->secret ??= Str::random(64));
+        $this->attributes['secret'] ??= Str::random(64);
     }
 }

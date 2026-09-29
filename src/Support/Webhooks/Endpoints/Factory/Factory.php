@@ -24,7 +24,6 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
     {
         return [
             'url' => fake()->url(),
-            'secret' => \Illuminate\Support\Str::random(64),
         ];
     }
 
