@@ -17,9 +17,9 @@ use Tests\TestCase;
 final class EndpointTest extends TestCase
 {
     #[Test]
-    public function it_auto_generates_a_secret_on_creation(): void
+    public function it_auto_generates_a_secret_when_made(): void
     {
-        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->create();
+        $endpoint = Endpoint::factory()->make();
 
         $this->assertNotNull($endpoint->secret);
         $this->assertSame(64, strlen($endpoint->secret));
