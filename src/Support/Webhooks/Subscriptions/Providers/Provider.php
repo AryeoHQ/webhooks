@@ -6,10 +6,8 @@ namespace Support\Webhooks\Subscriptions\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Support\Events\Log\Transportables\Events\Deleting as TransportableDeleting;
 use Support\Events\Log\Transportables\Transportable;
 use Support\Webhooks\Endpoints\Endpoint;
-use Support\Webhooks\Endpoints\Events\Deleting as EndpointDeleting;
 use Support\Webhooks\Subscriptions\Listeners\Cleanup;
 use Support\Webhooks\Subscriptions\Listeners\Detach;
 use Support\Webhooks\Subscriptions\Subscription;
@@ -35,8 +33,10 @@ class Provider extends ServiceProvider
 
     private function bootListeners(): void
     {
-        Event::listen(EndpointDeleting::class, Cleanup::class);
-        Event::listen(TransportableDeleting::class, Detach::class);
+        $this->app->booted(function (): void {
+            Event::listen(data_get(resolve(Endpoint::using())->dispatchesEvents(), 'deleting'), Cleanup::class);
+            Event::listen(data_get(resolve(Transportable::using())->dispatchesEvents(), 'deleting'), Detach::class);
+        });
     }
 
     private function bootMigrations(): void

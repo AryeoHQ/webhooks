@@ -329,6 +329,9 @@ class Endpoint extends BaseEndpoint
 \Support\Webhooks\Endpoints\Endpoint::use(App\Models\Endpoint::class);
 ```
 
+event-log's `Transportable` is swappable too. If you swap it, deleting your
+subclass still cleans up its webhook subscriptions.
+
 PHP does not inherit attributes. The subclass must redeclare `#[CollectedBy]`,
 `#[UseEloquentBuilder]`, and `#[UseFactory]`. If any are missing, the sealed
 traits throw `MissingAttribute` at runtime.
