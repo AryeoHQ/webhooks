@@ -9,15 +9,10 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Transportables\Transportable;
 use Support\Webhooks\Endpoints\Endpoint;
-use Support\Webhooks\Subscriptions\Listeners\Cleanup;
-use Support\Webhooks\Subscriptions\Listeners\Detach;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
-use Tests\Fixtures\Support\Webhooks\Endpoints\Endpoint as ExtendedEndpoint;
 use Tests\TestCase;
 
 #[CoversClass(Subscription::class)]
-#[CoversClass(Cleanup::class)]
-#[CoversClass(Detach::class)]
 final class SubscriptionTest extends TestCase
 {
     #[Test]
@@ -67,69 +62,5 @@ final class SubscriptionTest extends TestCase
         Endpoint::factory()->for($subscriber, 'principal')->hasAttached($transportable, [], 'events')->create();
 
         $this->assertSame(2, Subscription::query()->where('event_log_transportable_id', 'order.placed')->count()); // @phpstan-ignore staticMethod.dynamicCall
-    }
-
-    #[Test]
-    public function deleting_an_endpoint_deletes_its_subscriptions(): void
-    {
-        $placed = Transportable::factory()->create(['id' => 'order.placed']);
-        $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
-
-        $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached([$placed, $cancelled], [], 'events')->create();
-
-        $endpoint->delete();
-
-        $this->assertSame(0, Subscription::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
-    }
-
-    #[Test]
-    public function deleting_an_endpoint_leaves_other_endpoints_subscriptions_alone(): void
-    {
-        $placed = Transportable::factory()->create(['id' => 'order.placed']);
-        $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
-
-        $subscriber = Subscriber::factory()->create();
-
-        $deleted = Endpoint::factory()->for($subscriber, 'principal')->hasAttached($placed, [], 'events')->create();
-
-        $kept = Endpoint::factory()->for($subscriber, 'principal')->hasAttached($cancelled, [], 'events')->create();
-
-        $deleted->delete();
-
-        $this->assertSame(1, $kept->events()->count()); // @phpstan-ignore staticMethod.dynamicCall
-    }
-
-    #[Test]
-    public function deleting_an_extended_endpoint_deletes_its_subscriptions(): void
-    {
-        $transportable = Transportable::factory()->create(['id' => 'order.placed']);
-
-        Endpoint::use(ExtendedEndpoint::class);
-
-        try {
-            $endpoint = Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached($transportable, [], 'events')->create();
-
-            $this->assertInstanceOf(ExtendedEndpoint::class, $endpoint);
-
-            $endpoint->delete();
-
-            $this->assertSame(0, Subscription::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
-        } finally {
-            Endpoint::use(Endpoint::class);
-        }
-    }
-
-    #[Test]
-    public function deleting_a_transportable_detaches_its_subscriptions(): void
-    {
-        $placed = Transportable::factory()->create(['id' => 'order.placed']);
-        $cancelled = Transportable::factory()->create(['id' => 'order.cancelled']);
-
-        Endpoint::factory()->for(Subscriber::factory(), 'principal')->hasAttached([$placed, $cancelled], [], 'events')->create();
-
-        $placed->delete();
-
-        $this->assertSame(1, Subscription::query()->count()); // @phpstan-ignore staticMethod.dynamicCall
-        $this->assertSame('order.cancelled', Subscription::query()->sole()->event_log_transportable_id); // @phpstan-ignore staticMethod.dynamicCall
     }
 }

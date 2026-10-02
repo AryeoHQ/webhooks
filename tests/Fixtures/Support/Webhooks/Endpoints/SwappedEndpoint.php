@@ -9,10 +9,18 @@ use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Support\Webhooks\Endpoints\Builder\Builder;
 use Support\Webhooks\Endpoints\Collection\Endpoints;
-use Support\Webhooks\Endpoints\Endpoint as BaseEndpoint;
+use Support\Webhooks\Endpoints\Endpoint;
 use Support\Webhooks\Endpoints\Factory\Factory;
 
 #[CollectedBy(Endpoints::class)]
 #[UseEloquentBuilder(Builder::class)]
 #[UseFactory(Factory::class)]
-final class Endpoint extends BaseEndpoint {}
+final class SwappedEndpoint extends Endpoint
+{
+    /**
+     * @var array<string, class-string>
+     */
+    protected $dispatchesEvents = [
+        'deleting' => Events\Deleting::class,
+    ];
+}

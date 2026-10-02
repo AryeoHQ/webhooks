@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Events\Log\Transportables\Transportable;
 use Tests\Fixtures\Support\Entities\Subscriber\Subscriber;
-use Tests\Fixtures\Support\Webhooks\Endpoints\Endpoint as ExtendedEndpoint;
+use Tests\Fixtures\Support\Webhooks\Endpoints\SwappedEndpoint;
 use Tests\TestCase;
 
 #[CoversClass(Endpoint::class)]
@@ -64,11 +64,11 @@ final class EndpointTest extends TestCase
     #[Test]
     public function it_uses_the_model_given_to_use(): void
     {
-        Endpoint::use(ExtendedEndpoint::class);
+        Endpoint::use(SwappedEndpoint::class);
 
         try {
-            $this->assertSame(ExtendedEndpoint::class, Endpoint::using());
-            $this->assertInstanceOf(ExtendedEndpoint::class, Endpoint::factory()->make());
+            $this->assertSame(SwappedEndpoint::class, Endpoint::using());
+            $this->assertInstanceOf(SwappedEndpoint::class, Endpoint::factory()->make());
         } finally {
             Endpoint::use(Endpoint::class);
         }
