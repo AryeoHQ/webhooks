@@ -9,6 +9,7 @@ use CloudEvents\Serializers\JsonSerializer;
 use CloudEvents\V1\CloudEventImmutable;
 use Illuminate\Support\Facades\Http;
 use Support\Events\Log\Deliveries\Delivery;
+use Support\Webhooks\CloudEvents\Normalizers\Normalizer;
 use Support\Webhooks\Endpoints\Endpoint;
 
 class Webhook
@@ -35,7 +36,7 @@ class Webhook
     }
 
     public private(set) string $payload {
-        get => $this->payload ??= JsonSerializer::create()->serializeStructured($this->cloudEvent);
+        get => $this->payload ??= new JsonSerializer(new Normalizer)->serializeStructured($this->cloudEvent);
     }
 
     public private(set) int $timestamp {

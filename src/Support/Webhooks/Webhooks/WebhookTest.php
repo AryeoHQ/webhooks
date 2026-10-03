@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Support\Webhooks\Webhooks;
 
+use DateTime;
+use DateTimeInterface;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -57,6 +60,22 @@ final class WebhookTest extends TestCase
         $this->assertSame('application/json', $decoded['datacontenttype']);
         $this->assertArrayHasKey('source', $decoded);
         $this->assertArrayHasKey('time', $decoded);
+    }
+
+    #[Test]
+    public function it_uses_the_custom_cloud_event_normalizer(): void
+    {
+        Date::serializeUsing(fn (DateTimeInterface $date): string => $date->format(DateTime::RFC3339_EXTENDED));
+
+        try {
+            $webhook = Webhook::make(Delivery::factory()->webhook()->createQuietly());
+
+            $decoded = json_decode($webhook->payload, true);
+
+            $this->assertSame($webhook->occurredAt->jsonSerialize(), $decoded['time']);
+        } finally {
+            Date::serializeUsing(null);
+        }
     }
 
     #[Test]
