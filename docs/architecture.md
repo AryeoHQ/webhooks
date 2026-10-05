@@ -102,7 +102,7 @@ delivery.
 | `source` | `string` | `config('app.url')`. |
 | `type` | `string` | The `#[Alias]` value from the event (`$delivery->relay->log->type`). |
 | `data` | `array\|null` | The resolved payload (`$delivery->payload`). |
-| `time` | `CarbonImmutable` | When the event was dispatched (`$delivery->relay->log->occurred_at`). |
+| `occurredAt` | `CarbonImmutable` | When the event was dispatched (`$delivery->relay->log->occurred_at`). |
 | `payload` | `string` | The serialized CloudEvents JSON string. |
 | `timestamp` | `int` | Unix timestamp of when the request was built. |
 | `signature` | `string` | HMAC-SHA256 of `"{$timestamp}.{$payload}"`. |
@@ -120,7 +120,7 @@ the `Illuminate\Http\Client\Response`.
 
 Every webhook is a [CloudEvents v1.0](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md)
 structured-mode JSON message. The `cloudevents/sdk-php` package handles
-serialization.
+serialization, except for `time`.
 
 ```json
 {
@@ -129,10 +129,15 @@ serialization.
   "source": "https://your-app.com",
   "type": "article.updated",
   "datacontenttype": "application/json",
-  "time": "2026-09-01T12:00:00+00:00",
+  "time": "2026-09-01T12:00:00.000000Z",
   "data": { "id": "...", "title": "..." }
 }
 ```
+
+The SDK always writes `time` in its own fixed format, which won't match the
+dates in `data`. So `Support\Webhooks\CloudEvents\Normalizers\Normalizer` swaps
+in the date exactly as it serializes itself to JSON, the same way the dates in
+`data` are written. If that isn't valid RFC 3339, the SDK's value is kept.
 
 The `data` field holds the payload slice for the endpoint's requested
 version. If no version was requested, it holds the full `event_logs.data`

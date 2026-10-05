@@ -174,10 +174,14 @@ structured-mode JSON message:
   "source": "https://your-app.com",
   "type": "article.updating",
   "datacontenttype": "application/json",
-  "time": "2026-09-01T12:00:00Z",
+  "time": "2026-09-01T12:00:00.000000Z",
   "data": { ... }
 }
 ```
+
+`time` is written exactly the way your app writes dates to JSON, so it matches
+the dates in `data`. If that format isn't valid RFC 3339, which CloudEvents
+requires, the CloudEvents SDK's own format is used instead.
 
 ### The request headers
 
