@@ -19,7 +19,9 @@ class Webhook
     }
 
     public private(set) string $source {
-        get => $this->source ??= (string) config('app.url');
+        get => $this->source ??= filled(config('webhooks.source'))
+            ? (string) config('webhooks.source')
+            : (string) config('app.url');
     }
 
     public private(set) string $type {

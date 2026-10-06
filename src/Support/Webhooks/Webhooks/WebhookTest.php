@@ -36,13 +36,30 @@ final class WebhookTest extends TestCase
     #[Test]
     public function it_resolves_source_from_config(): void
     {
-        config(['app.url' => $url = 'https://example.com']);
+        config(['webhooks.source' => $url = 'https://webhooks.example.com']);
 
         $delivery = Delivery::factory()->webhook()->createQuietly();
 
         $webhook = Webhook::make($delivery);
 
         $this->assertSame($url, $webhook->source);
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_app_url_when_source_is_blank(): void
+    {
+        config(['app.url' => $url = 'https://example.com']);
+
+        $delivery = Delivery::factory()->webhook()->createQuietly();
+
+        config(['webhooks.source' => null]);
+        $this->assertSame($url, Webhook::make($delivery)->source);
+
+        config(['webhooks.source' => '']);
+        $this->assertSame($url, Webhook::make($delivery)->source);
+
+        config(['webhooks.source' => ' ']);
+        $this->assertSame($url, Webhook::make($delivery)->source);
     }
 
     #[Test]

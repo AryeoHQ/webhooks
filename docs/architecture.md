@@ -99,7 +99,7 @@ delivery.
 | Property | Type | Source |
 |---|---|---|
 | `id` | `string` | The delivery id. This is the idempotency key. |
-| `source` | `string` | `config('app.url')`. |
+| `source` | `string` | `config('webhooks.source')`, or `config('app.url')` if that's blank. |
 | `type` | `string` | The `#[Alias]` value from the event (`$delivery->relay->log->type`). |
 | `data` | `array\|null` | The resolved payload (`$delivery->payload`). |
 | `occurredAt` | `CarbonImmutable` | When the event was dispatched (`$delivery->relay->log->occurred_at`). |
@@ -149,7 +149,7 @@ Every request carries three headers:
 
 | Header | Value |
 |---|---|
-| `Source` | `config('app.url')`. Lets the receiver route to the right handler before reading the body. |
+| `Source` | `config('webhooks.source')`, or `config('app.url')` if that's blank. Lets the receiver route to the right handler before reading the body. |
 | `Timestamp` | Unix timestamp of when the request was built. |
 | `Signature` | HMAC-SHA256 of `"{$timestamp}.{$payload}"`, keyed by the endpoint's `secret`. |
 
