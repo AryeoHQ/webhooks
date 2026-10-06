@@ -31,6 +31,9 @@ composer require aryeo/webhooks
 
 The service provider registers itself. The migration runs automatically.
 
+If your app sits behind a proxy or WAF, set `WEBHOOKS_SOURCE` to the address
+your subscribers should see. Otherwise we send `app.url`, which might be wrong.
+
 ---
 
 ## Use
@@ -189,7 +192,7 @@ requires, the CloudEvents SDK's own format is used instead.
 |---|---|
 | `Content-Type` | `application/cloudevents+json` |
 | `Idempotency-Key` | The delivery id. Stable across retries. |
-| `Source` | `config('app.url')`. Lets the receiver route before reading the body. |
+| `Source` | `config('webhooks.source')`, or `config('app.url')` if that's blank. Lets the receiver route before reading the body. |
 | `Timestamp` | Unix timestamp of when the request was built. |
 | `Signature` | HMAC-SHA256 hex digest. |
 
@@ -357,6 +360,7 @@ Envelope::make(recipient: $endpoint, version: $endpoint->version)
 
 | Variable | Default | Description |
 |---|---|---|
+| `WEBHOOKS_SOURCE` | `app.url` | The CloudEvent `source` and `Source` header. |
 | `WEBHOOKS_QUEUE_COLLECTING` | _(default)_ | Queue for the relay processing job. |
 | `WEBHOOKS_QUEUE_SENDING` | _(default)_ | Queue for the delivery processing job. |
 | `WEBHOOKS_TIMEOUT_CONNECT` | `5` | Seconds to wait for a TCP connection. |

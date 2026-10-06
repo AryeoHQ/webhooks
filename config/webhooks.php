@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'source' => env('WEBHOOKS_SOURCE'),
+
     'queues' => [
         'collecting' => env('WEBHOOKS_QUEUE_COLLECTING'),
         'sending' => env('WEBHOOKS_QUEUE_SENDING'),
