@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7d03743166026aefbc16a87170db04f1",
+    "content-hash": "4dce0aa692b89715b5e1c2e1bbcf5f7a",
     "packages": [
         {
             "name": "aryeo/actions",
