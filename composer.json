@@ -21,22 +21,22 @@
     },
     "require": {
         "php": "^8.4",
-        "laravel/framework": "^12.37",
-        "aryeo/event-log": "0.0.8",
-        "aryeo/eloquent-state-machines": "0.0.32",
+        "laravel/framework": "^12.37 || ^13",
+        "aryeo/event-log": "0.0.9",
+        "aryeo/eloquent-state-machines": "0.0.33",
         "cloudevents/sdk-php": "^1.2",
         "nesbot/carbon": "^3.11",
-        "symfony/http-foundation": "^7.0"
+        "symfony/http-foundation": "^7.0 || ^8.0"
     },
     "require-dev": {
-        "aryeo/tooling-laravel": "0.0.39",
+        "aryeo/tooling-laravel": "0.0.40",
         "phpstan/phpstan": "^2.1",
         "nikic/php-parser": "^5.0",
-        "orchestra/testbench": "^10.6",
+        "orchestra/testbench": "^10.6 || ^11",
         "brianium/paratest": "^7.14",
-        "phpunit/phpunit": "^12.4.1",
+        "phpunit/phpunit": "^12.4.1 || ^13",
         "pestphp/pest": "^4.1",
-        "orchestra/testbench-core": "^10.7",
+        "orchestra/testbench-core": "^10.7 || ^11",
         "nunomaduro/collision": "<8.9.4"
     },
     "autoload": {
