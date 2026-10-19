@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cafc9f426b2cc410fe1aab5244091487",
+    "content-hash": "be6a94412a4076b7904d157f963d8632",
     "packages": [
         {
             "name": "aryeo/actions",
-            "version": "0.0.22",
+            "version": "0.0.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AryeoHQ/actions.git",
-                "reference": "a3b16d40872488808c83566b4fbca7e93d82261c"
+                "reference": "7da043af4de07e2595eeb24c725bf8235fd987de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/actions/zipball/a3b16d40872488808c83566b4fbca7e93d82261c",
-                "reference": "a3b16d40872488808c83566b4fbca7e93d82261c",
+                "url": "https://api.github.com/repos/AryeoHQ/actions/zipball/7da043af4de07e2595eeb24c725bf8235fd987de",
+                "reference": "7da043af4de07e2595eeb24c725bf8235fd987de",
                 "shasum": ""
             },
             "require": {
-                "aryeo/tooling-laravel": "0.0.40",
+                "aryeo/tooling-laravel": "0.0.41",
                 "laravel/framework": "^12.0 || ^13",
                 "laravel/prompts": "^0.3",
                 "mockery/mockery": "^1.6",
@@ -114,27 +114,27 @@
                 "laravel"
             ],
             "support": {
-                "source": "https://github.com/AryeoHQ/actions/tree/0.0.22",
+                "source": "https://github.com/AryeoHQ/actions/tree/0.0.23",
                 "issues": "https://github.com/AryeoHQ/actions/issues"
             },
-            "time": "2026-10-15T14:18:15+00:00"
+            "time": "2026-10-16T19:01:20+00:00"
         },
         {
             "name": "aryeo/eloquent-state-machines",
-            "version": "0.0.33",
+            "version": "0.0.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AryeoHQ/eloquent-state-machines.git",
-                "reference": "37f412101833236725e598701d99dfc130001937"
+                "reference": "78adb73494eb0a626c13b71e54e2641b2dec0d7c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/eloquent-state-machines/zipball/37f412101833236725e598701d99dfc130001937",
-                "reference": "37f412101833236725e598701d99dfc130001937",
+                "url": "https://api.github.com/repos/AryeoHQ/eloquent-state-machines/zipball/78adb73494eb0a626c13b71e54e2641b2dec0d7c",
+                "reference": "78adb73494eb0a626c13b71e54e2641b2dec0d7c",
                 "shasum": ""
             },
             "require": {
-                "aryeo/actions": "0.0.22",
+                "aryeo/actions": "0.0.23",
                 "laravel/framework": "12.x || ^13",
                 "laravel/prompts": "^0.3.7",
                 "nikic/php-parser": "^5.7",
@@ -146,7 +146,7 @@
                 "symfony/finder": "^7.3 || ^8.0"
             },
             "require-dev": {
-                "aryeo/tooling-laravel": "0.0.40",
+                "aryeo/tooling-laravel": "0.0.41",
                 "nesbot/carbon": "^3.10",
                 "orchestra/testbench": "^10.6 || ^11",
                 "orchestra/testbench-core": "^10.7 || ^11",
@@ -221,29 +221,29 @@
             ],
             "description": "A state machine package for Eloquent.",
             "support": {
-                "source": "https://github.com/AryeoHQ/eloquent-state-machines/tree/0.0.33",
+                "source": "https://github.com/AryeoHQ/eloquent-state-machines/tree/0.0.34",
                 "issues": "https://github.com/AryeoHQ/eloquent-state-machines/issues"
             },
-            "time": "2026-10-15T19:31:53+00:00"
+            "time": "2026-10-16T19:25:50+00:00"
         },
         {
             "name": "aryeo/event-log",
-            "version": "0.0.9",
+            "version": "0.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AryeoHQ/event-log.git",
-                "reference": "c6d053eb78ed8f7c3048aa72ee3aa0a9d7fa18ea"
+                "reference": "937d6bbbd1fdd56c5ee8727caaac1ff2d6394cfc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/event-log/zipball/c6d053eb78ed8f7c3048aa72ee3aa0a9d7fa18ea",
-                "reference": "c6d053eb78ed8f7c3048aa72ee3aa0a9d7fa18ea",
+                "url": "https://api.github.com/repos/AryeoHQ/event-log/zipball/937d6bbbd1fdd56c5ee8727caaac1ff2d6394cfc",
+                "reference": "937d6bbbd1fdd56c5ee8727caaac1ff2d6394cfc",
                 "shasum": ""
             },
             "require": {
-                "aryeo/actions": "0.0.22",
-                "aryeo/eloquent-state-machines": "0.0.33",
-                "aryeo/tooling-laravel": "0.0.40",
+                "aryeo/actions": "0.0.23",
+                "aryeo/eloquent-state-machines": "0.0.34",
+                "aryeo/tooling-laravel": "0.0.41",
                 "laravel/framework": "^12.37 || ^13",
                 "nesbot/carbon": "^3.11",
                 "nikic/php-parser": "^5.0",
@@ -305,29 +305,33 @@
                     "Tests\\": "tests/"
                 }
             },
+            "license": [
+                "MIT"
+            ],
             "authors": [
                 {
                     "name": "Justin Seliga",
                     "email": "justinsel@zillowgroup.com"
                 }
             ],
+            "description": "Records class-backed Laravel events to the database and relays them to external recipients.",
             "support": {
-                "source": "https://github.com/AryeoHQ/event-log/tree/0.0.9"
+                "source": "https://github.com/AryeoHQ/event-log/tree/0.0.10"
             },
-            "time": "2026-10-15T20:28:32+00:00"
+            "time": "2026-10-16T20:05:26+00:00"
         },
         {
             "name": "aryeo/tooling-laravel",
-            "version": "0.0.40",
+            "version": "0.0.41",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AryeoHQ/tooling-laravel.git",
-                "reference": "d1635d14a1f1c520875630d66ecd7dfa63ed2898"
+                "reference": "215de64d5133dda3b87bc6cbaeefa860264c7619"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/tooling-laravel/zipball/d1635d14a1f1c520875630d66ecd7dfa63ed2898",
-                "reference": "d1635d14a1f1c520875630d66ecd7dfa63ed2898",
+                "url": "https://api.github.com/repos/AryeoHQ/tooling-laravel/zipball/215de64d5133dda3b87bc6cbaeefa860264c7619",
+                "reference": "215de64d5133dda3b87bc6cbaeefa860264c7619",
                 "shasum": ""
             },
             "require": {
@@ -421,10 +425,10 @@
             ],
             "description": "Development tooling for Laravel",
             "support": {
-                "source": "https://github.com/AryeoHQ/tooling-laravel/tree/0.0.40",
+                "source": "https://github.com/AryeoHQ/tooling-laravel/tree/0.0.41",
                 "issues": "https://github.com/AryeoHQ/tooling-laravel/issues"
             },
-            "time": "2026-10-14T22:59:20+00:00"
+            "time": "2026-10-16T14:53:25+00:00"
         },
         {
             "name": "brick/math",
@@ -12048,5 +12052,5 @@
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

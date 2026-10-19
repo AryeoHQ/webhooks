@@ -1,5 +1,7 @@
 {
     "name": "aryeo/webhooks",
+    "description": "Sends recorded events as signed CloudEvents over HTTP.",
+    "license": "MIT",
     "type": "library",
     "repositories": {
         "tooling-laravel": {
@@ -22,14 +24,14 @@
     "require": {
         "php": "^8.4",
         "laravel/framework": "^12.37 || ^13",
-        "aryeo/event-log": "0.0.9",
-        "aryeo/eloquent-state-machines": "0.0.33",
+        "aryeo/event-log": "0.0.10",
+        "aryeo/eloquent-state-machines": "0.0.34",
         "cloudevents/sdk-php": "^1.2",
         "nesbot/carbon": "^3.11",
         "symfony/http-foundation": "^7.0 || ^8.0"
     },
     "require-dev": {
-        "aryeo/tooling-laravel": "0.0.40",
+        "aryeo/tooling-laravel": "0.0.41",
         "phpstan/phpstan": "^2.1",
         "nikic/php-parser": "^5.0",
         "orchestra/testbench": "^10.6 || ^11",
