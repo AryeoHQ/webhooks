@@ -4,21 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be6a94412a4076b7904d157f963d8632",
+    "content-hash": "9b3bb5ac1a22790e9e6b5120edb9437b",
     "packages": [
         {
             "name": "aryeo/actions",
             "version": "0.0.23",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/AryeoHQ/actions.git",
-                "reference": "7da043af4de07e2595eeb24c725bf8235fd987de"
-            },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/actions/zipball/7da043af4de07e2595eeb24c725bf8235fd987de",
-                "reference": "7da043af4de07e2595eeb24c725bf8235fd987de",
-                "shasum": ""
+                "url": "https://artifactory.zgtools.net/artifactory/api/composer/listing-and-vendor-management-composer/direct-dists/aryeo/actions/actions-0.0.23.zip",
+                "reference": "c1178d594ac14dc261f6c64bb5722da8d2a8162d"
             },
             "require": {
                 "aryeo/tooling-laravel": "0.0.41",
@@ -112,26 +106,15 @@
                 "Aryeo",
                 "actions",
                 "laravel"
-            ],
-            "support": {
-                "source": "https://github.com/AryeoHQ/actions/tree/0.0.23",
-                "issues": "https://github.com/AryeoHQ/actions/issues"
-            },
-            "time": "2026-10-16T19:01:20+00:00"
+            ]
         },
         {
             "name": "aryeo/eloquent-state-machines",
             "version": "0.0.34",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/AryeoHQ/eloquent-state-machines.git",
-                "reference": "78adb73494eb0a626c13b71e54e2641b2dec0d7c"
-            },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/eloquent-state-machines/zipball/78adb73494eb0a626c13b71e54e2641b2dec0d7c",
-                "reference": "78adb73494eb0a626c13b71e54e2641b2dec0d7c",
-                "shasum": ""
+                "url": "https://artifactory.zgtools.net/artifactory/api/composer/listing-and-vendor-management-composer/direct-dists/aryeo/eloquent-state-machines/eloquent-state-machines-0.0.34.zip",
+                "reference": "3904e81487653e0a7ca589d94a4548a0920b5229"
             },
             "require": {
                 "aryeo/actions": "0.0.23",
@@ -219,26 +202,15 @@
                     "email": "justinsel@zillowgroup.com"
                 }
             ],
-            "description": "A state machine package for Eloquent.",
-            "support": {
-                "source": "https://github.com/AryeoHQ/eloquent-state-machines/tree/0.0.34",
-                "issues": "https://github.com/AryeoHQ/eloquent-state-machines/issues"
-            },
-            "time": "2026-10-16T19:25:50+00:00"
+            "description": "A state machine package for Eloquent."
         },
         {
             "name": "aryeo/event-log",
             "version": "0.0.10",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/AryeoHQ/event-log.git",
-                "reference": "937d6bbbd1fdd56c5ee8727caaac1ff2d6394cfc"
-            },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/event-log/zipball/937d6bbbd1fdd56c5ee8727caaac1ff2d6394cfc",
-                "reference": "937d6bbbd1fdd56c5ee8727caaac1ff2d6394cfc",
-                "shasum": ""
+                "url": "https://artifactory.zgtools.net/artifactory/api/composer/listing-and-vendor-management-composer/direct-dists/aryeo/event-log/event-log-0.0.10.zip",
+                "reference": "bf93340aa8122c3bb54a67e2d602c51f0c8a546c"
             },
             "require": {
                 "aryeo/actions": "0.0.23",
@@ -314,25 +286,15 @@
                     "email": "justinsel@zillowgroup.com"
                 }
             ],
-            "description": "Records class-backed Laravel events to the database and relays them to external recipients.",
-            "support": {
-                "source": "https://github.com/AryeoHQ/event-log/tree/0.0.10"
-            },
-            "time": "2026-10-16T20:05:26+00:00"
+            "description": "Records class-backed Laravel events to the database and relays them to external recipients."
         },
         {
             "name": "aryeo/tooling-laravel",
             "version": "0.0.41",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/AryeoHQ/tooling-laravel.git",
-                "reference": "215de64d5133dda3b87bc6cbaeefa860264c7619"
-            },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AryeoHQ/tooling-laravel/zipball/215de64d5133dda3b87bc6cbaeefa860264c7619",
-                "reference": "215de64d5133dda3b87bc6cbaeefa860264c7619",
-                "shasum": ""
+                "url": "https://artifactory.zgtools.net/artifactory/api/composer/listing-and-vendor-management-composer/direct-dists/aryeo/tooling-laravel/tooling-laravel-0.0.41.zip",
+                "reference": "d31fa77ce196481820465f12b99f78999e37a27f"
             },
             "require": {
                 "canvural/larastan-strict-rules": "^3.0",
@@ -423,12 +385,7 @@
                     "email": "justinsel@zillowgroup.com"
                 }
             ],
-            "description": "Development tooling for Laravel",
-            "support": {
-                "source": "https://github.com/AryeoHQ/tooling-laravel/tree/0.0.41",
-                "issues": "https://github.com/AryeoHQ/tooling-laravel/issues"
-            },
-            "time": "2026-10-16T14:53:25+00:00"
+            "description": "Development tooling for Laravel"
         },
         {
             "name": "brick/math",
