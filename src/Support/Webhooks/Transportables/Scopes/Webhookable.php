@@ -7,8 +7,12 @@ namespace Support\Webhooks\Transportables\Scopes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
+use Support\Events\Log\Transportables\Transportable;
 use Support\Webhooks\Contracts\Webhook;
 
+/**
+ * @implements Scope<Transportable>
+ */
 final class Webhookable implements Scope
 {
     public function apply(Builder $builder, Model $model): void

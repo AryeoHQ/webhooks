@@ -11,16 +11,16 @@
         }
     },
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "laravel/framework": "^12.37 || ^13",
-        "aryeo/event-log": "0.0.10",
-        "aryeo/eloquent-state-machines": "0.0.34",
+        "aryeo/event-log": "0.0.12",
+        "aryeo/eloquent-state-machines": "0.0.35",
         "cloudevents/sdk-php": "^1.2",
         "nesbot/carbon": "^3.11",
         "symfony/http-foundation": "^7.0 || ^8.0"
     },
     "require-dev": {
-        "aryeo/tooling-laravel": "0.0.41",
+        "aryeo/tooling-laravel": "0.0.43",
         "phpstan/phpstan": "^2.1",
         "nikic/php-parser": "^5.0",
         "orchestra/testbench": "^10.6 || ^11",
